@@ -97,10 +97,9 @@ data.rename(columns={'Année obtention du diplôme': 'date_diplome',
 'Quels sont vos projets d Èvolution de carriËre ?' : 'projet_evolution_carriere',
 'Recommanderiez-vous Polytech Montpellier ‡ un(e) ami(e) qui souhaite poursuivre un cursus dans l enseignement supÈrieur ?' : 'recommandation_polytech',
 
-
 },inplace=True)
 
-data.drop(columns= ['Sans activitÈ volontairement, merci de prÈciser :','Vous occupez plusieurs emplois?','Pour quelle(s) raison(s) avez-vous refusÈ ce ou ces emploi(s) ?', 'Quel type d Ètudes poursuivez-vous ?', 'Concours prÈparÈ(s)', 'Dans quel Ètablissement Ítes-vous inscrit(e) (nom et ville Èventuellement) ?', 'vous poursuivez des Ètudes en alternance?','Pour quelle raison avez-vous principalement choisi de poursuivre des Ètudes ?', 'Quel type de thËse prÈparez-vous ?', 'Nom et coordonnÈes de l entreprise partenaire', 'Sujet de votre ThËse', 'Nom et coordonnÈes du laboratoire qui vous accueille', 'Le laboratoire est-il localisÈ?', 'RÈgion de localisation du laboratoire', 'Pays de localisation du laboratoire?', 
+data.drop(columns= ["etes-vous ‡ la recherche d un emploi depuis la sortie de l Ècole ?", 'Sans activitÈ volontairement, merci de prÈciser :','Vous occupez plusieurs emplois?','Pour quelle(s) raison(s) avez-vous refusÈ ce ou ces emploi(s) ?', 'Quel type d Ètudes poursuivez-vous ?', 'Concours prÈparÈ(s)', 'Dans quel Ètablissement Ítes-vous inscrit(e) (nom et ville Èventuellement) ?', 'vous poursuivez des Ètudes en alternance?','Pour quelle raison avez-vous principalement choisi de poursuivre des Ètudes ?', 'Quel type de thËse prÈparez-vous ?', 'Nom et coordonnÈes de l entreprise partenaire', 'Sujet de votre ThËse', 'Nom et coordonnÈes du laboratoire qui vous accueille', 'Le laboratoire est-il localisÈ?', 'RÈgion de localisation du laboratoire', 'Pays de localisation du laboratoire?', 
 'Vous bÈnÈficiez d une source de financement contractuel, d une allocation ou d un contrat doctoral',
 'Quel est le type de financement contractuel qui permet de financer votre thËse ?',
 'De quel type de volontariat s agit-il ?',
