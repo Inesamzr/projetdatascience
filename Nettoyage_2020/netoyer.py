@@ -10,14 +10,14 @@ print(data.head())
 data.rename(columns={'Année obtention du diplôme': 'date_diplome', 
 'Formation': 'filiere', 
 'Vous avez la nationalitÈ franÁaise?': 'nationalite_francaise', 
-'AnnÈe obtention du diplÙme' : 'annee_obtention_diplome',
+'AnnÈe obtention du diplÙme' : 'date_diplome',
 'Quelle est votre nationalitÈ?': 'nationalite',
 'Pour votre derniËre annÈe, vous etiez inscrit(e) en :' : 'type_formation',
 'Quelle est votre situation actuelle ?' : 'situation_actuelle',
 'tes-vous ‡ la recherche d un emploi depuis la sortie de l Ècole ? ' : 'en_recherche_emploi',
 'Depuis combien de mois Ítes-vous en recherche d emploi ?' : 'nb_mois_recherche_emploi',
 'Quelle(s) difficultÈ(s) rencontrez-vous dans votre recherche d emploi?' : 'difficultés_recherche',
-
+'Vous poursuiviez des Ètudes en alternance?' : 'alternance',
 
 'Avez-vous eu une autre activitÈ (emploi CDD/CDI, poursuite d Ètude, thËse, crÈation d entreprise) entre votre sortie de l Ècole et votre situation actuelle ?' : 'autre_activite',
 'Sur cet emploi, vous Ítes :' : 'statut_emploi',
@@ -99,7 +99,7 @@ data.rename(columns={'Année obtention du diplôme': 'date_diplome',
 
 },inplace=True)
 
-data.drop(columns= ["etes-vous ‡ la recherche d un emploi depuis la sortie de l Ècole ?", 'Sans activitÈ volontairement, merci de prÈciser :','Vous occupez plusieurs emplois?','Pour quelle(s) raison(s) avez-vous refusÈ ce ou ces emploi(s) ?', 'Quel type d Ètudes poursuivez-vous ?', 'Concours prÈparÈ(s)', 'Dans quel Ètablissement Ítes-vous inscrit(e) (nom et ville Èventuellement) ?', 'vous poursuivez des Ètudes en alternance?','Pour quelle raison avez-vous principalement choisi de poursuivre des Ètudes ?', 'Quel type de thËse prÈparez-vous ?', 'Nom et coordonnÈes de l entreprise partenaire', 'Sujet de votre ThËse', 'Nom et coordonnÈes du laboratoire qui vous accueille', 'Le laboratoire est-il localisÈ?', 'RÈgion de localisation du laboratoire', 'Pays de localisation du laboratoire?', 
+data.drop(columns= ["etes-vous ‡ la recherche d un emploi depuis la sortie de l Ècole ?", 'Sans activitÈ volontairement, merci de prÈciser :','Vous occupez plusieurs emplois?','Pour quelle(s) raison(s) avez-vous refusÈ ce ou ces emploi(s) ?', 'Quel type d Ètudes poursuivez-vous ?', 'Concours prÈparÈ(s)', 'Dans quel Ètablissement Ítes-vous inscrit(e) (nom et ville Èventuellement) ?','Pour quelle raison avez-vous principalement choisi de poursuivre des Ètudes ?', 'Quel type de thËse prÈparez-vous ?', 'Nom et coordonnÈes de l entreprise partenaire', 'Sujet de votre ThËse', 'Nom et coordonnÈes du laboratoire qui vous accueille', 'Le laboratoire est-il localisÈ?', 'RÈgion de localisation du laboratoire', 'Pays de localisation du laboratoire?', 
 'Vous bÈnÈficiez d une source de financement contractuel, d une allocation ou d un contrat doctoral',
 'Quel est le type de financement contractuel qui permet de financer votre thËse ?',
 'De quel type de volontariat s agit-il ?',
@@ -166,7 +166,7 @@ data.drop(columns= ["etes-vous ‡ la recherche d un emploi depuis la sortie de 
 'Concours prÈparÈ(s)',
 'Dans quel Ètablissement Ètiez-vous inscrit(e) (nom et ville Èventuellement) ?',
 'Pour quelle raison aviez-vous principalement choisi de poursuivre des Ètudes ?',
-'Vous poursuiviez des Ètudes en alternance?',
+
 'La poursuite d Ètude a-t elle jouÈ un rÙle preponderant dans votre insertion professionnelle?',
 'De quel type de volontariat s agissait-il ?',
 'DurÈe du contrat de volontariat (en mois)',
