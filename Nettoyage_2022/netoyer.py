@@ -3,6 +3,7 @@ import pandas as pd
 donnees_2022 = pd.read_csv('enquete_2022DS-2.csv', sep=',')
 
 donnees_2022.rename(columns={               'Année obtention du diplôme': 'date_diplome', 
+                                            'Identifiant': 'identifiant',
                                             'Formation': 'filiere', 
                                             'Sexe' : 'sexe',
                                             'Nature de votre contrat de travail?' : 'nature_contrat',
