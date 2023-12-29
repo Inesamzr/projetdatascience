@@ -19,7 +19,6 @@ donnees_2022.rename(columns={               'Année obtention du diplôme': 'dat
                                             'Avez-vous eu une autre activité (emploi CDD/CDI, poursuite d étude, thèse, création d entreprise) entre votre sortie de l école et votre situation actuelle ?': 'autre_activite',
                                             'Quel est le poste que vous occupez?' : 'post_actuel',
                                             'Sur cet emploi, vous êtes :' : 'statut_emploi',
-                                            'Quelle est la nature de votre contrat de travail ?' : 'nature_contrat',
                                             'Quelle est la durée de votre CDD?': 'duree_CDD',
                                             'Votre emploi actuel se trouve ?': 'localisation_emploi',
 
@@ -40,9 +39,9 @@ donnees_2022.rename(columns={               'Année obtention du diplôme': 'dat
                                             'Quel est le domaine général de votre entreprise ?' : 'domaine_general_entreprise',
                                             'Quels sont les langages informatiques que vous pratiquez dans le cadre de votre activité :' : 'langage_programmation',
                                             'Considérez vous que votre emploi est directement lié aux énergies renouvelables ?' : 'emploi_lie_energie_renouvelable', 
-                                            'Quel est votre salaire BRUT ANNUEL HORS PRIMES et HORS 13ème mois ?' : 'salaire_annuel_brut_hors_prime',
+                                            'Quel est votre salaire BRUT ANNUEL HORS PRIMES et HORS 13&egraveme mois ?' : 'remuneration_annuelle_brute',
                                             'Percevez vous des primes et/ou un 13ème mois?' : 'prime',
-                                            'Quel est votre salaire brut ANNUEL AVEC PRIMES ou 13&egraveme mois ?' : 'salaire_annuel_brut_avec_prime',
+                                            'Quel est votre salaire brut ANNUEL AVEC PRIMES ou 13&egraveme mois ?' : 'remuneration_prime',
                                             'Responsabilités exercées - Vous avez des personnes sous votre responsabilité hiérarchique ?' : 'responsabilite_hierarchie',
                                             'Responsabilités exercées - Vous avez la responsabilité d un budget ?': 'responsabilite_budget',
                                             'Responsabilités exercées - Vous avez la responsabilité fonctionnelle  d une équipe ?' : 'responsabilite_equipe',
@@ -66,7 +65,7 @@ donnees_2022.rename(columns={               'Année obtention du diplôme': 'dat
                                             'Quelle &eacutetait votre situation pour cette 1&egravere activit&eacute qui a fait suite &agrave la sortie de Polytech ?' : 'situation_sortie_polytech',
                                             'Combien de mois avez-vous mis pour trouver votre premier emploi depuis l obtention de votre dipl&ocircme ?' : 'temps_trouve_premier_emploi',
                                             'Sur ce 1er emploi, vous étiez :' : 'post_premier_emploi',
-                                            'nature_contrat.1' : 'nature_contrat',
+                                            'nature_contrat.1' : 'nature_contrat_premier_emploi',
                                             'Dans quelles conditions s est déroulé votre départ de votre première entreprise ?' : 'condition_fin_premier_contrat',
                                             'Quel était l intitulé du poste occupé ?' : 'intitule_premier_emploi',
                                             'Votre 1er emploi se trouvait-il ?' : 'location_premier_emploi',
@@ -92,16 +91,10 @@ donnees_2022.rename(columns={               'Année obtention du diplôme': 'dat
                                             'Quels sont vos projets d Èvolution de carriËre ?' : 'projet_evolution_carriere',
                                             'Recommanderiez-vous Polytech Montpellier à un(e) ami(e) qui souhaite poursuivre un cursus dans l enseignement supérieur ?' : 'recommandation_polytech',
                                             'Merci de préciser les raisons' : 'impact_covid',
-                                            
-
                                             'Dans quelle r&eacutegion?' : 'region_emploi',
                                             'quel est le statut de votre employeur / entreprise?' : 'statut_entreprise',
-                                            'Nombre de salarié(e)s de votre employeur / entreprise' : 'nb_salarie_entrprise',
+                                            'Nombre de salarié(e)s de votre employeur / entreprise' : 'nb_salarie_entreprise',
                                             'Quel est le secteur dans lequel vous intervenez principalement?' : 'secteur_intervention',
-                                            'Quel est votre salaire BRUT ANNUEL HORS PRIMES et HORS 13&egraveme mois ?' : 'salaire_brut_sans_prime',
-                                            'Quel est votre salaire brut ANNUEL AVEC PRIMES et/ou 13&egraveme mois ?' : 'salaire_brut_avec_prime',
-                                            'Responsabilités exercées - Vous avez des personnes sous votre responsabilité hiérarchique ?' : 'responsabilite_hierarchie',
-
 
 
 
