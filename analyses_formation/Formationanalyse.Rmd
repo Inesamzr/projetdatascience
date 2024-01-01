@@ -1,0 +1,55 @@
+---
+title: "Formation analyse"
+author: "Ines Amzert"
+date: "2024-01-01"
+output: pdf_document
+---
+
+```{r}
+library(dplyr)
+library(purrr)
+
+# Liste des chemins vers les fichiers CSV
+chemins <- c("../Nettoyage_2018/enquete_2018DS-2_nettoyer.csv", "../Nettoyage_2019/2019.csv", "../Nettoyage_2020/enquete_2020DS_nettoyer.csv", "../Nettoyage_2021/enquete_2021DS-2_nettoyer.csv", "../Nettoyage_2022/enquete_2022DS-2_nettoyer.csv", "../Nettoyage2023/enquete_2023DS-2_NR2.csv")
+
+# Fonction pour vérifier la présence d'une colonne
+check_column <- function(df, col_name) {
+  if (col_name %in% colnames(df)) {
+    return(TRUE)
+  } else {
+    return(FALSE)
+  }
+}
+
+# Lecture des fichiers et sélection des colonnes si elles existent
+dataframes <- map(chemins, ~ {
+  df <- read.csv(.x)
+  columns_to_select <- c(
+    "identifiant", "type_formation", "filiere",
+    "emploi_formation", "satisfaction_formation", "alternance",
+    "recommandation_polytech", "ig_avantage_double_competence",
+    "ig_membre_reseau", "remuneration_annuelle_brute", "prime", "remuneration_prime"
+  )
+  columns_to_select <- Filter(function(col) check_column(df, col), columns_to_select)
+  select(df, all_of(columns_to_select))
+})
+
+dataframes <- map(chemins, ~ {
+  df <- read.csv(.x)
+  df$identifiant <- as.character(df$identifiant)
+  return(df)
+})
+
+# Fusion des dataframes en fonction de l'attribut 'identifiant'
+merged_data <- reduce(dataframes, left_join, by = "identifiant")
+
+# Export du fichier fusionné
+write.csv(merged_data, "../analyses_formation/axeformation.csv", row.names = FALSE)
+
+# Affichage du contenu du fichier fusionné
+df <- read.csv("../analyses_formation/axeformation.csv")
+print(df)
+
+
+```
+
