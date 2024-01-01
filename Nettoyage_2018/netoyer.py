@@ -83,7 +83,7 @@ donnees_2018.rename(columns={               'Année obtention du diplôme': 'dat
                                             'Votre double compétence en Informatique & Gestion vous semble-t-elle  constituer un plus pour votre insertion professionnelle ? ' : 'ig_avantage_double_competence',
                                             "Etes-vous membre de réseaux ou associations  professionnelles liées à l'informatique  ? " : 'ig_membre_reseau',
                                             'Quels sont vos projets d Èvolution de carriËre ?' : 'projet_evolution_carriere',
-                                            "Recommanderiez-vous Polytech Montpellier à un(e) ami(e) qui souhaite poursuivre un cursus dans l'enseignement supérieur ?" : 'recommandation_polytech',
+                                            "Recommanderiez-vous Polytech Montpellier à un·e ami·e qui souhaite poursuivre un cursus dans l'enseignement supérieur ?" : 'recommandation_polytech',
 
 
                             }, inplace=True)

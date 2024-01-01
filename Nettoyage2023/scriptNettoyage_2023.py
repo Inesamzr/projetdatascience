@@ -61,16 +61,13 @@ colonnes_a_supprimer = ['Quel type d\'études poursuivez-vous ?',
                         'Adresse ( numero, rue, avenue..)de l\'entreprise',
                         'Les éléments suivants vous semblent-ils avoir joué un rôle dans votre recrutement sur ce 1er emploi ? - La réputation du département',
                         'Les éléments suivants vous semblent-ils avoir joué un rôle dans votre recrutement sur ce 1er emploi ? - La formation',
-                        'Globalement, sur une échelle allant de 1 à 5, êtes-vous satisfait·e de votre formation à Polytech Montpellier ? ',
                         'L\'accompagnement de votre école dans votre projet professionnel vous a-t-il paru...',
-                        'Etes-vous membre de réseaux ou associations  professionnelles liées à l\'informatique  ? ',
                         'Laquelle ?',
                         'Quels sont vos projets d\'évolution de carrière ?',
                         'Accepteriez-vous d\'être sollicité·e par l\'école pour intervenir dans la formation ?',
                         'Sous quelle(s) forme(s), désireriez-vous intervenir ?',
                         'Accepteriez-vous de servir de relais au sein de votre entreprise afin de faciliter la collecte de la taxe d\'apprentissage par l\'école ?',
                         'Depuis que vous avez quitté l\'école, êtes-vous encore en contact avec des enseignants du département ?',
-                        'Recommanderiez-vous Polytech Montpellier à un·e ami·e qui souhaite poursuivre un cursus dans l\'enseignement supérieur ?'
 
                         ]
 data_drop_2023.drop(columns=colonnes_a_supprimer, inplace=True)
@@ -162,11 +159,11 @@ data_drop_2023.rename(columns={'Année obtention du diplôme': 'date_diplome',
                              "Les éléments suivants vous semblent-ils avoir joué un rôle dans votre recrutement sur ce 1er emploi ? - Vos compétences linguistiques": "competences_linguistiques_pour_premier_emploi",
                              "Les éléments suivants vous semblent-ils avoir joué un rôle dans votre recrutement sur ce 1er emploi ? - Vos experiences à l'étranger " : "experience_etranger_pour_premier_emploi",
                              'Globalement, vous êtes satisfait(e) de votre premier emploi?': 'satisfaction_premier_emploi', #jusqu'ici point 2eme check
-                             'Globalement,sur une échelle allant de 1 à 5, êtes-vous satisfait(e) de votre formation à Polytech Montpellier ? ': 'satisfaction_formation',
+                             'Globalement sur une échelle allant de 1 à 5, êtes-vous satisfait·e de votre formation à Polytech Montpellier ? ': 'satisfaction_formation',
                              'Votre double compétence en Informatique & Gestion vous semble-t-elle  constituer un plus pour votre insertion professionnelle ? ': 'ig_avantage_double_competence',
-                             "Etes-vous membre de réseaux ou associations  professionnelles liées à l'informatique  ? ": 'ig_membre_reseau',
+                             "Etes-vous membre de réseaux ou associations  professionnelles liées à l informatique  ? ": 'ig_membre_reseau',
                              'Quels sont vos projets d Èvolution de carriËre ?': 'projet_evolution_carriere',
-                             "Recommanderiez-vous Polytech Montpellier à un(e) ami(e) qui souhaite poursuivre un cursus dans l'enseignement supérieur ?": 'recommandation_polytech',
+                             'Recommanderiez-vous Polytech Montpellier à un·e ami·e qui souhaite poursuivre un cursus dans l enseignement supérieur ?': 'recommandation_polytech',
                              }, inplace=True)
 
 data_drop_2023.to_csv('enquete_2023DS-2_NR2.csv', index=False)
