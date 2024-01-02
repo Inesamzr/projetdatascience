@@ -7,35 +7,40 @@ print("Affichage de nombre de lignes et de colonnes", df.shape)
 
 
 # Sélectionner les colonnes spécifiques
-colonnes_a_garder = ['Date', 'Genre',
-                     'identifiant', 'Année obtention du diplôme', 'Formation', 'Votre rémunération brute annuelle (hors primes )?',
-                     'Vous percevez des primes ?', 'Votre rémunération brute annuelle AVEC primes',
+colonnes_a_garder = ['Date', 
+                     'Genre',
+                     'identifiant', 
+                     'Année obtention du diplôme', 
+                     'Formation', 
+                     #'Votre rémunération brute annuelle (hors primes )?', #volontariat/thèse
+                     #'Vous percevez des primes ?', #volontariat/thèse
+                     #'Votre rémunération brute annuelle AVEC primes', #volontariat/thèse
                      'Quel est votre salaire BRUT ANNUEL (HORS PRIMES)?', 
                      'Percevez vous des primes et/ou un 13ème mois ?',
                      'Quel est votre salaire brut ANNUEL AVEC PRIMES ?',
                      'Quel était votre rémunération brute annuelle (HORS PRIMES) ?', #premier emploi
                      'Perceviez-vous des primes ?',#premier emploi
                      'Quel était votre rémunération brut AVEC PRIMES ?', #premier emploi
-                     'Votre rémunération brute annuelle (hors primes et hors 13ème mois)?', #laboratoire
-                     'Perceviez-vous des primes et/ou un 13ème mois ?', #laboratoire
-                     'Votre rémunération brute annuelle AVEC primes et/ou 13ème mois ?', #laboratoire
+                     #'Votre rémunération brute annuelle (hors primes et hors 13ème mois)?', #laboratoire
+                     #'Perceviez-vous des primes et/ou un 13ème mois ?', #laboratoire
+                     #'Votre rémunération brute annuelle AVEC primes et/ou 13ème mois ?', #laboratoire
                      
                      ]
-data_2023_axe1 = df[colonnes_a_garder]
+data_2023_axe1 = df[colonnes_a_garder].copy()
 
 # data_2023_axe1.to_csv('2023_axe1', index=False)
 
 data_2023_axe1.rename(columns={'Genre': 'sexe',
                                'Année obtention du diplôme': 'date_diplome',
                                'Formation': 'filiere',
-                                 'Votre rémunération brute annuelle (hors primes )?': 'remuneration_annuelle_brute',
-                                    'Vous percevez des primes ?': 'prime',
-                                    'Votre rémunération brute annuelle AVEC primes': 'remuneration_prime',
-                                    'Quel est votre salaire BRUT ANNUEL (HORS PRIMES)?': 'salaire_annuelle_brute',
-                                    'Percevez vous des primes et/ou un 13ème mois ?': 'prime_ET_13eme mois',
-                                    'Quel est votre salaire brut ANNUEL AVEC PRIMES ?': 'salaire_annuelle_prime',
-                                    'Quel était votre rémunération brute annuelle (HORS PRIMES) ?': 'salaire_annuelle_brute_premier_emploi',
-                                    'Perceviez-vous des primes ?': 'prime_premier_emploi',
-})
+                               'Quel est votre salaire BRUT ANNUEL (HORS PRIMES)?': 'remuneration_annuelle_brute',
+                               'Percevez vous des primes et/ou un 13ème mois ?': 'prime',
+                               'Quel est votre salaire brut ANNUEL AVEC PRIMES ?': 'remuneration_prime',
+                               'Quel était votre rémunération brute annuelle (HORS PRIMES) ?': 'remuneration_annuelle_brute_hors_prime_premier_emploi',
+                               'Perceviez-vous des primes ?': 'prime_premier_emploi',
+                               'Quel était votre rémunération brut AVEC PRIMES ?': 'remuneration_annuelle_brute_avec_prime_premier_emploi'
+                               
+                               
+                               }, inplace=True)
                                  
 data_2023_axe1.to_csv('2023_Renommé_axe1', index=False)
