@@ -164,11 +164,10 @@ data_drop_2023.rename(columns={'Année obtention du diplôme': 'date_diplome',
                              "Etes-vous membre de réseaux ou associations  professionnelles liées à l informatique  ? ": 'ig_membre_reseau',
                              'Quels sont vos projets d Èvolution de carriËre ?': 'projet_evolution_carriere',
                              'Recommanderiez-vous Polytech Montpellier à un·e ami·e qui souhaite poursuivre un cursus dans l enseignement supérieur ?': 'recommandation_polytech',
-#                             "Votre rémunération brute annuelle (hors primes )?": "remuneration_annuelle_brute_hors_prime",
-#                             "Vous percevez des primes ?": "prime",
-#                             "Votre rémunération brute annuelle AVEC primes ?": "remuneration_annuelle_brute_avec_prime",
-#                             "Votre rémunération brute annuelle (hors primes et hors 13ème mois)?": "remuneration_annuelle_brute",
-#                             "Votre rémunération brute annuelle AVEC primes et/ou 13ème mois ?": "remuneration_annuelle_brute_avec_prime_13eme_mois",
+                             "Votre rémunération brute annuelle (hors primes )?": "remuneration_annuelle_brute_hors_prime",
+                             "Vous percevez des primes ?": "prime",
+                             "Votre rémunération brute annuelle AVEC primes ?": "remuneration_annuelle_brute_avec_prime",
+                             "Votre rémunération brute annuelle (hors primes et hors 13ème mois)?"
                              }, inplace=True)
 
 data_drop_2023.to_csv('enquete_2023DS-2_NR2.csv', index=False)
