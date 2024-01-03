@@ -63,7 +63,7 @@ donnees_2018.rename(columns={               'Année obtention du diplôme': 'dat
                                             "Dans quelles conditions s'est déroulé votre départ de votre première entreprise ?" : "condition_fin_premier_contrat",
                                             "Quel était l'intitulé du poste occupé ?" : "intitule_premier_emploi",
                                             "Votre 1er emploi actuel se trouvait-il ?" : "location_premier_emploi",
-                                            "Dans quelle région?" : "region_premier_emploi",
+                                            "Dans quelle région?1" : "region_premier_emploi",
                                             "Quel est le nom de l'entreprise dans laquelle vous travailliez ?" : "nom_entreprise_premier_emploi",
                                             "Quelle est la taille de l'entreprise (ou du groupe si l'entreprise appartient à un groupe) dans laquelle (ou lequel) vous travailliez ?" : "taille_entreprise_premier_emploi",
                                             "Quel est le secteur d'activité de cette entreprise ?" : "secteur_activite_premier_emploi",
@@ -232,7 +232,15 @@ colonnes_a_supprimer = [
     "Quels sont vos projets d'évolution de carrière ?",
     "Souhaitez vous être informé sur la nouvelle association des diplômés de Polytech (Polytech Connect)?",
     "Accepteriez-vous d'être sollicité par l'école pour intervenir dans la formation ?",
-    "Sous quelle(s) forme(s), désireriez-vous intervenir?"
+    "Sous quelle(s) forme(s), désireriez-vous intervenir?",
+    "Quel est le poste que vous occupez?",
+    "Quel est le nom de votre entreprise / projet?",
+    "Pays de localisation de la future entreprise?",
+    " Son site internet?",
+    "Aviez-vous un statut de :",
+    "Laquelle?",
+    "Recommanderiez-vous Polytech Montpellier à un(e) ami(e) qui souhaite poursuivre un cursus dans l'enseignement supérieur ?",
+    
 ]
 
 donnees_2018 = donnees_2018.drop(columns=[colonne for colonne in colonnes_a_supprimer if colonne in donnees_2018.columns])
