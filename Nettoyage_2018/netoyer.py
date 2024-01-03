@@ -102,7 +102,7 @@ colonnes_a_supprimer = [
     "Quel est le type de financement contractuel qui permet de financer votre thèse ?",
     "Votre rémunération brute annuelle (hors primes et 13ème mois)?",
     "Percevez des primes et/ou un 13ème mois?",
-    
+    "Vous occupez plusieurs emplois?",
     'Date',
     'Champ 1',
     'Champ 2',
