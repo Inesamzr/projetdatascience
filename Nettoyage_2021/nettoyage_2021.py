@@ -112,7 +112,6 @@ colonnes_a_supprimer = [
     "Votre rémunération brute annuelle (hors primes et 13ème mois)?",
     "Percevez des primes et/ou un 13ème mois?",
     "Durant vos études, vous avez bénéficié d'aménagements de scolarité liés à un handicap, ou vous vous êtes déclaré en situation d'handicap auprès de votre établissement",
-    'Date',
     'Champ 1',
     'Champ 2',
     "'Sans activité volontairement', merci de préciser :",
