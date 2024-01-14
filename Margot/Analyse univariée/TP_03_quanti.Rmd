@@ -1,0 +1,235 @@
+---
+title: "Projet Data"
+author: "Margot Goudard"
+date: "2023-2024"
+output:
+  pdf_document:
+    latex_engine: xelatex
+---
+
+```{r}
+library(dplyr)
+library(lubridate)
+library(ggplot2)
+library(tidyr)
+library(purrr)
+
+# Définir la fonction pour l'analyse descriptive des salaires
+analyse_descriptive_salaire <- function(chemin_fichier) {
+
+
+  # Charger les données depuis le fichier CSV
+  data <- read.csv(chemin_fichier)
+
+  # Calculer les statistiques descriptives pour le salaire actuel
+  stats_salaire_actuel <- data %>%
+    summarise(
+      moyenne = mean(remuneration_prime, na.rm = TRUE),
+      ecart_type = sd(remuneration_prime, na.rm = TRUE),
+      minimum = min(remuneration_prime, na.rm = TRUE),
+      maximum = max(remuneration_prime, na.rm = TRUE)
+    )
+
+  # Calculer les statistiques descriptives pour le salaire au premier emploi
+  stats_salaire_premier_emploi <- data %>%
+    summarise(
+      moyenne = mean(remuneration_annuelle_brute_avec_prime_premier_emploi, na.rm = TRUE),
+      ecart_type = sd(remuneration_annuelle_brute_avec_prime_premier_emploi, na.rm = TRUE),
+      minimum = min(remuneration_annuelle_brute_avec_prime_premier_emploi, na.rm = TRUE),
+      maximum = max(remuneration_annuelle_brute_avec_prime_premier_emploi, na.rm = TRUE)
+    )
+
+  # Affichage des statistiques descriptives pour le salaire actuel
+  cat("Statistiques descriptives pour le salaire actuel en", annee, ":\n")
+  print(stats_salaire_actuel)
+
+  # Affichage des statistiques descriptives pour le salaire au premier emploi
+  cat("\nStatistiques descriptives pour le salaire au premier emploi en", annee, ":\n")
+  print(stats_salaire_premier_emploi)
+
+  # Retourner les statistiques descriptives
+  return(list(stats_salaire_actuel = stats_salaire_actuel, stats_salaire_premier_emploi = stats_salaire_premier_emploi))
+}
+
+# Appliquer la fonction à chacun des cinq fichiers
+chemins_fichiers <- c(
+    "C:\\Users\\gouda\\OneDrive\\Documents\\INFO4A Montpellier\\projetdatascience\\Nettoyage_2018\\enquete_2018DS-2_nettoyer.csv",
+    "C:\\Users\\gouda\\OneDrive\\Documents\\INFO4A Montpellier\\projetdatascience\\Nettoyage_2019\\2019.csv",
+    "C:\\Users\\gouda\\OneDrive\\Documents\\INFO4A Montpellier\\projetdatascience\\Nettoyage_2020\\enquete_2020DS_nettoyer.csv",
+    "C:\\Users\\gouda\\OneDrive\\Documents\\INFO4A Montpellier\\projetdatascience\\Nettoyage_2021\\enquete_2021DS-2_nettoyer.csv",
+    "C:\\Users\\gouda\\OneDrive\\Documents\\INFO4A Montpellier\\projetdatascience\\Nettoyage_2022\\enquete_2022DS-2_nettoyer.csv",
+    "C:\\Users\\gouda\\OneDrive\\Documents\\INFO4A Montpellier\\projetdatascience\\Nettoyage2023\\enquete_2023DS-2_NR2.csv"
+)
+
+# Stocker les statistiques dans une liste
+stats_list <- list()
+
+# Création d'un dataframe pour stocker les années et les moyennes des salaires actuels et au premier emploi
+df_moyennes_salaire <- data.frame(
+  Annee = numeric(),
+  Moyenne_Salaire_Actuel = numeric(),
+  Moyenne_Salaire_Premier_Emploi = numeric()
+)
+
+# Définir l'année initiale
+annee <- 2018
+
+for (chemin in chemins_fichiers) {
+  cat("\nAnalyse descriptive pour le fichier:", chemin, "\n")
+  stats <- analyse_descriptive_salaire(chemin)
+  stats_list[[chemin]] <- stats
+
+  annee_fichier <- annee
+
+  # Ajouter les données au dataframe
+  df_moyennes_salaire <- rbind(df_moyennes_salaire, data.frame(
+    Annee = annee_fichier,
+    Moyenne_Salaire_Actuel = stats$stats_salaire_actuel$moyenne,
+    Moyenne_Salaire_Premier_Emploi = stats$stats_salaire_premier_emploi$moyenne
+  ))
+
+  # Incrémenter l'année
+  annee = annee + 1
+}
+
+# Conversion de la colonne Année en facteur pour un affichage correct dans l'histogramme
+df_moyennes_salaire$Annee <- as.factor(df_moyennes_salaire$Annee)
+
+# Création de l'histogramme avec couleurs différenciées
+ggplot() +
+  geom_bar(data = df_moyennes_salaire, aes(x = Annee, y = Moyenne_Salaire_Actuel, fill = "Salaire Actuel"), stat = "identity", position = "dodge", color = "black") +
+  geom_bar(data = df_moyennes_salaire, aes(x = Annee, y = Moyenne_Salaire_Premier_Emploi, fill = "Salaire Premier Emploi"), stat = "identity", position = "dodge", color = "black") +
+  labs(title = "Comparaison des Moyennes de Salaire Actuel et Premier Emploi par Année",
+       x = "Année",
+       y = "Moyenne de Salaire",
+       fill = "Type de Salaire") +
+  scale_fill_manual(values = c("Salaire Actuel" = "blue", "Salaire Premier Emploi" = "orange")) +
+  theme_minimal()
+
+# Stocker les identifiants uniques de chaque fichier dans une liste
+identifiants_par_fichier <- list()
+
+for (chemin in chemins_fichiers) {
+  data <- read.csv(chemin)
+  identifiants <- data %>% distinct(identifiant)
+  identifiants_par_fichier[[chemin]] <- identifiants
+}
+
+# Compter le nombre d'occurrences de chaque identifiant à travers tous les fichiers
+table_identifiants <- table(unlist(lapply(identifiants_par_fichier, function(x) x$identifiant)))
+
+# Identifier les identifiants qui apparaissent exactement 3 fois
+identifiants_3_occurrences <- names(table_identifiants[table_identifiants == 3])
+
+# Afficher les identifiants qui apparaissent exactement 3 fois
+cat("\nIdentifiants qui apparaissent exactement 3 fois dans tous les fichiers :\n")
+print(identifiants_3_occurrences)
+
+
+# Créer une boucle pour chaque triplet d'identifiants
+# Créer une liste pour stocker les pourcentages d'augmentation pour chaque triplet d'identifiants
+pourcentages_augmentation_1_an <- list()
+pourcentages_augmentation_2_ans <- list()
+
+# Créer une boucle pour chaque triplet d'identifiants
+for (identifiant in identifiants_3_occurrences) {
+  
+  # Filtrer les données pour l'identifiant spécifique
+  data_identifiant <- lapply(chemins_fichiers, function(chemin) {
+    read.csv(chemin) %>% filter(identifiant == identifiant)
+  })
+  
+  # Vérifier si le salaire actuel est mentionné dans les trois fichiers
+  if (all(sapply(data_identifiant, function(df) "salaire_annuel_brut_avec_prime" %in% names(df)))) {
+    # Extraire les salaires actuels pour les individus ayant rempli la case "salaire_annuel_brut_avec_prime"
+    salaires_actuels <- sapply(data_identifiant, function(df) {
+      # Filtrer les valeurs non numériques, NA et ceux qui ont rempli la case "salaire_annuel_brut_avec_prime"
+      df_numeric <- df[is.numeric(df$salaire_annuel_brut_avec_prime) & !is.na(df$salaire_annuel_brut_avec_prime) & df$salaire_annuel_brut_avec_prime > 0, , drop = FALSE]
+      if (ncol(df_numeric) > 0) {
+        return(df_numeric$salaire_annuel_brut_avec_prime)
+      } else {
+        return(numeric(0))
+      }
+    })
+    
+    # Vérifier que tous les salaires actuels sont numériques
+    if (all(sapply(salaires_actuels, function(x) length(x) > 0 && all(!is.na(x))))) {
+      # Calculer les pourcentages d'augmentation d'une année à l'autre
+      pourcentages_1_an <- numeric()
+      pourcentages_2_ans <- numeric()
+      for (i in 1:(length(salaires_actuels) - 2)) {
+        pourcentage_augmentation_1_an <- ((salaires_actuels[[i + 1]][1] - salaires_actuels[[i]][1]) / salaires_actuels[[i]][1]) * 100
+        pourcentage_augmentation_2_ans <- ((salaires_actuels[[i + 2]][1] - salaires_actuels[[i+1]][1]) / salaires_actuels[[i+1]][1]) * 100
+        pourcentages_1_an <- c(pourcentages_1_an, pourcentage_augmentation_1_an)
+        pourcentages_2_ans <- c(pourcentages_2_ans, pourcentage_augmentation_2_ans)
+      }
+      
+      # Stocker les pourcentages dans les listes correspondantes
+      pourcentages_augmentation_1_an[[identifiant]] <- pourcentages_1_an
+      pourcentages_augmentation_2_ans[[identifiant]] <- pourcentages_2_ans
+    } else {
+      cat("Erreur: Les données de salaire actuel pour l'identifiant", identifiant, "ne sont pas valides.\n")
+    }
+  }
+}
+
+# Créer un vecteur pour stocker les moyennes des pourcentages d'augmentation après 1 an et 2 ans
+moyennes_pourcentages_1_an <- numeric()
+moyennes_pourcentages_2_ans <- numeric()
+
+# Calculer la moyenne des pourcentages d'augmentation après chaque année
+for (annee_diff in 1:(length(chemins_fichiers) - 1)) {
+  moyenne_pourcentage_1_an <- mean(sapply(pourcentages_augmentation_1_an, function(pourcentages) pourcentages[annee_diff]))
+  moyenne_pourcentage_2_ans <- mean(sapply(pourcentages_augmentation_2_ans, function(pourcentages) pourcentages[annee_diff]))
+  moyennes_pourcentages_1_an <- c(moyennes_pourcentages_1_an, moyenne_pourcentage_1_an)
+  moyennes_pourcentages_2_ans <- c(moyennes_pourcentages_2_ans, moyenne_pourcentage_2_ans)
+}
+
+# Créer un graphique pour afficher les moyennes des pourcentages d'augmentation au fil des années
+ggplot() +
+  geom_line(aes(x = 1:(length(chemins_fichiers) - 1), y = moyennes_pourcentages_1_an), color = "blue", linetype = "solid", size = 1, label = "1 an") +
+  geom_line(aes(x = 1:(length(chemins_fichiers) - 1), y = moyennes_pourcentages_2_ans), color = "red", linetype = "dashed", size = 1, label = "2 ans") +
+  labs(title = "Moyenne des Pourcentages d'Augmentation Annuelle après 1 an et 2 ans",
+       x = "Années écoulées",
+       y = "Moyenne Pourcentage d'Augmentation") +
+  theme_minimal() +
+  scale_color_manual(values = c("blue", "red")) +
+  scale_linetype_manual(values = c("solid", "dashed")) +
+  guides(color = guide_legend(title = "Période"))
+
+# Stocker les données dans un seul dataframe pour l'ANOVA
+data_anova <- df_moyennes_salaire %>%
+  pivot_longer(cols = c(Moyenne_Salaire_Actuel, Moyenne_Salaire_Premier_Emploi),
+               names_to = "Type_Salaire",
+               values_to = "Moyenne_Salaire")
+
+# Exécuter l'ANOVA
+anova_result <- aov(Moyenne_Salaire ~ Annee * Type_Salaire, data = data_anova)
+
+# Afficher le résumé de l'ANOVA
+summary(anova_result)
+
+# ANOVA TEMPORALITE
+
+# Charger les données depuis les fichiers et sélectionner les colonnes pertinentes
+dataframes <- map(chemins_fichiers, ~ read.csv(.x, sep = ",") %>%
+  mutate(identifiant = as.character(identifiant)) %>%
+  select(identifiant, remuneration_annuelle_brute_avec_prime_premier_emploi, remuneration_prime,mois_emploi_occupe ))
+
+# Combinez les dataframes en un seul
+merged_data <- bind_rows(dataframes)
+
+# Écrivez les données combinées dans un fichier CSV
+write.csv(merged_data, "C:\\Users\\gouda\\OneDrive\\Documents\\INFO4A Montpellier\\projetDataR\\axetemporalite.csv", row.names = FALSE)
+
+# Lisez les données combinées à partir du fichier CSV
+axetemporalite <- read.csv("C:\\Users\\gouda\\OneDrive\\Documents\\INFO4A Montpellier\\projetDataR\\axetemporalite.csv", header = TRUE, stringsAsFactors = FALSE)
+
+# ANOVA pour la variable : remuneration_annuelle_brute_avec_prime_premier_emploi
+anova <- aov(remuneration_prime ~ remuneration_annuelle_brute_avec_prime_premier_emploi, data = axetemporalite)
+summary(anova)
+
+# ANOVA pour la variable : remuneration_prime en fonction de la durée totale d'occupation d'un emploi
+anova_exp <- aov(remuneration_prime ~ mois_emploi_occupe, data = axetemporalite)
+summary(anova_exp)
+
