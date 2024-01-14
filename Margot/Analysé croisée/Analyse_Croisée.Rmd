@@ -2,50 +2,91 @@
 title: "Analyse croisée"
 author: "Margot Goudard"
 date: "2023-2024"
-output: pdf_document
+output:
+  pdf_document:
+    fig_height: 9
 ---
 
 ```{r setup}
 library(ggplot2)
 library(dplyr)
 library(plotly)
+library(stringi)
+library(forcats)
 
-# Charger les données depuis le fichier CSV et exclure les lignes avec valeurs vides
-data <- read.csv("merged_database.csv") %>%
-  filter(!is.na(secteur_activite_entreprise) & secteur_activite_entreprise != "",
-         !is.na(remuneration_annuelle_brute_avec_prime_premier_emploi) & remuneration_annuelle_brute_avec_prime_premier_emploi != "",
-         !is.na(sexe) & sexe != "",
-         !is.na(localisation_emploi) & localisation_emploi != "",
-         !is.na(remuneration_annuelle_brute_avec_prime_premier_emploi) & remuneration_annuelle_brute_avec_prime_premier_emploi != "",
-         !is.na(pays_localisation) & pays_localisation != "",
-         !is.na(date_diplome) & date_diplome != "",
-         !is.na(filiere) & filiere != "")
 
 # Diagramme 1 - Rémunération en fonction du secteur d'activité
-print(ggplot(data, aes(x = secteur_activite_entreprise, y = remuneration_annuelle_brute_avec_prime_premier_emploi, fill = sexe)) +
-  geom_bar(stat = "identity", position = "dodge") +
-  labs(title = "Rémunération en fonction du secteur d'activité",
-       x = "Secteur d'activité",
+
+data1 <- read.csv("merged_database.csv") %>%
+  filter(!is.na(secteur_premiere_entreprise) & secteur_premiere_entreprise != "",
+         !is.na(remuneration_annuelle_brute_avec_prime_premier_emploi) & remuneration_annuelle_brute_avec_prime_premier_emploi != "",
+         !is.na(sexe) & sexe != "")
+
+data1$secteur_premiere_entreprise <- gsub("'", " ", data1$secteur_premiere_entreprise)
+
+print(ggplot(data1, aes(x = secteur_premiere_entreprise, y = remuneration_annuelle_brute_avec_prime_premier_emploi, fill = sexe)) +
+  geom_bar(stat = "identity", position = position_dodge(width = 0), width = 0.8) +
+  labs(title = "Rémunération Premier Emploi en fonction du secteur d'activité",
+       x = "Secteur",
        y = "Rémunération moyenne") +
-  theme_minimal())
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1)))
+
 
 # Diagramme 2 - Rémunération en fonction de la localisation géographique
-print(ggplot(data, aes(x = localisation_emploi, y = remuneration_annuelle_brute_avec_prime_premier_emploi, fill = pays_localisation)) +
+# Charger les données
+data2 <- read.csv("merged_database.csv") %>%
+  filter(         !is.na(remuneration_annuelle_brute_avec_prime_premier_emploi) & remuneration_annuelle_brute_avec_prime_premier_emploi != "", !is.na(localisation_premier_emploi) & localisation_premier_emploi != "")
+
+# Standardiser les valeurs de localisation
+data2$localisation_premier_emploi <- tolower(iconv(data2$localisation_premier_emploi, to = "UTF-8", sub = "byte"))
+data2$localisation_premier_emploi <- stringi::stri_trans_general(data2$localisation_premier_emploi, "Latin-ASCII")
+data2$localisation_premier_emploi <- gsub("'", " ", data2$localisation_premier_emploi)
+
+# Remplacer les valeurs spécifiques dans la colonne 'pays_premier_emploi'
+data2 <- data2 %>%
+  mutate(pays_premier_emploi = ifelse(pays_premier_emploi == "Je travaillais depuis la Belgique pour une entreprise Bangladaise/Allemande", "Belgique", pays_premier_emploi)) %>%
+  mutate(pays_premier_emploi = ifelse(pays_premier_emploi %in% c("Danemark", "Danemark "), "Danemark", pays_premier_emploi))
+
+# Ajouter "France" à la variable pays_premier_emploi lorsque localisation_premier_emploi est vide
+data2 <- data2 %>%
+  mutate(pays_premier_emploi = ifelse(localisation_premier_emploi == "en france", "France", pays_premier_emploi))
+
+# Tracer le diagramme
+print(ggplot(data2, aes(x = localisation_premier_emploi, y = remuneration_annuelle_brute_avec_prime_premier_emploi, fill = pays_premier_emploi)) +
   geom_bar(stat = "identity", position = "dodge") +
-  labs(title = "Rémunération en fonction de la localisation géographique",
+  labs(title = "Rémunération Premier Emploi en fonction de la localisation géographique",
        x = "Localisation",
        y = "Rémunération moyenne") +
   theme_minimal())
 
 
-# Diagramme 3 - Rémunération en fonction de la Filière et de la Date de Diplôme
-ggplot(data, aes(x = filiere, y = remuneration_annuelle_brute_avec_prime_premier_emploi, color = date_diplome)) +
+# Diagramme 3 - Rémunération Premier Emploi en fonction de la Filière et de la Date de Diplôme
+
+data3 <- read.csv("merged_database.csv") %>%
+  filter(!is.na(filiere) & filiere != "",
+         !is.na(remuneration_annuelle_brute_avec_prime_premier_emploi) & remuneration_annuelle_brute_avec_prime_premier_emploi != "",
+         !is.na(date_diplome) & date_diplome != "") 
+
+data3$filiere <- fct_collapse(data3$filiere,
+  "Eau et Génie Civil (EGC - apprentissage)" = c("Eau et Génie Civil (EGC - apprentissage)", "Eau et GÈnie Civil (EGC - apprentissage)"),
+  "Génie Biologique et Agroalimentaires" = c("Génie Biologique et Agroalimentaires (GBA)", "GÈnie Biologique et Agroalimentaires (GBA)"),
+  "Matériaux" = c("Matériaux (MAT)", "MatÈriaux (MAT)"),
+  "Mécanique et Interactions" = c("Mécanique et Interactions (MI)", "MÈcanique et Interactions (MI)"),
+  "Mécanique Structures Industrielles" = c("Mécanique Structures Industrielles (MSI - apprentissage)", "MÈcanique Structures Industrielles (MSI - apprentissage)"),
+  "Microélectronique Et Automatique" = c("Microélectronique Et Automatique (MEA)", "MicroÈlectronique Et Automatique (MEA)"),
+  "Sciences et Technologies de l'Eau" = c("Sciences et Technologies de l'Eau (STE)", "Sciences et Technologies de l Eau (STE)"),
+  "Systèmes Embarqués" = c("Systèmes Embarqués (SE - apprentissage)", "SystËmes EmbarquÈs (SE - apprentissage)")
+)
+
+ggplot(data3, aes(x = filiere, y = remuneration_annuelle_brute_avec_prime_premier_emploi, color = date_diplome)) +
   geom_point() +
-  labs(title = "Rémunération en fonction de la Filière et de la Date de Diplôme",
+  labs(title = "Rémunération Premier Emploi en fonction de la Filière et de la Date de Diplôme",
        x = "Filière",
        y = "Rémunération Annuelle Brute",
        color = "Date de Diplôme") +
-  theme_minimal()
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 
 
