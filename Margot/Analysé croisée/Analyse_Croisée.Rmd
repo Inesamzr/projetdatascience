@@ -1,0 +1,52 @@
+---
+title: "Analyse croisée"
+author: "Margot Goudard"
+date: "2023-2024"
+output: pdf_document
+---
+
+```{r setup}
+library(ggplot2)
+library(dplyr)
+library(plotly)
+
+# Charger les données depuis le fichier CSV et exclure les lignes avec valeurs vides
+data <- read.csv("merged_database.csv") %>%
+  filter(!is.na(secteur_activite_entreprise) & secteur_activite_entreprise != "",
+         !is.na(remuneration_annuelle_brute_avec_prime_premier_emploi) & remuneration_annuelle_brute_avec_prime_premier_emploi != "",
+         !is.na(sexe) & sexe != "",
+         !is.na(localisation_emploi) & localisation_emploi != "",
+         !is.na(remuneration_annuelle_brute_avec_prime_premier_emploi) & remuneration_annuelle_brute_avec_prime_premier_emploi != "",
+         !is.na(pays_localisation) & pays_localisation != "",
+         !is.na(date_diplome) & date_diplome != "",
+         !is.na(filiere) & filiere != "")
+
+# Diagramme 1 - Rémunération en fonction du secteur d'activité
+print(ggplot(data, aes(x = secteur_activite_entreprise, y = remuneration_annuelle_brute_avec_prime_premier_emploi, fill = sexe)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Rémunération en fonction du secteur d'activité",
+       x = "Secteur d'activité",
+       y = "Rémunération moyenne") +
+  theme_minimal())
+
+# Diagramme 2 - Rémunération en fonction de la localisation géographique
+print(ggplot(data, aes(x = localisation_emploi, y = remuneration_annuelle_brute_avec_prime_premier_emploi, fill = pays_localisation)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(title = "Rémunération en fonction de la localisation géographique",
+       x = "Localisation",
+       y = "Rémunération moyenne") +
+  theme_minimal())
+
+
+# Diagramme 3 - Rémunération en fonction de la Filière et de la Date de Diplôme
+ggplot(data, aes(x = filiere, y = remuneration_annuelle_brute_avec_prime_premier_emploi, color = date_diplome)) +
+  geom_point() +
+  labs(title = "Rémunération en fonction de la Filière et de la Date de Diplôme",
+       x = "Filière",
+       y = "Rémunération Annuelle Brute",
+       color = "Date de Diplôme") +
+  theme_minimal()
+
+
+
+```
