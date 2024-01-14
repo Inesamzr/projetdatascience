@@ -1,0 +1,767 @@
+---
+title: "Analyse Axe1"
+author: "Eya"
+date: "2024-01-02"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Import des données 
+```{r}
+data2018 <- read.csv("/cloud/project/data/2018.csv")
+data2019 <- read.csv("/cloud/project/data/2019.csv")
+data2020 <- read.csv("/cloud/project/data/2020.csv")
+data2021 <- read.csv("/cloud/project/data/2021.csv")
+data2022 <- read.csv("/cloud/project/data/2022.csv")
+data2023 <- read.csv("/cloud/project/data/2023_axe1.csv")
+
+#homogénéisation de colonnes
+data2020<- data2020 %>% rename(sexe = Genre)
+data2021<- data2021 %>% rename(sexe = Genre)
+data2022<- data2022 %>% rename(sexe = Genre)
+
+# Conversion des identifiants de la notation scientifique
+data2019$identifiant <- as.numeric(format(data2019$identifiant, scientific = FALSE))
+
+```
+
+##Selection des colonnes nécessaires pour l'analyse 
+```{r}
+library(dplyr)
+
+data2018 <- select(data2018, sexe, identifiant, date_diplome, filiere, remuneration_annuelle_brute, prime, remuneration_prime, remuneration_annuelle_brute_hors_prime_premier_emploi,nationalite_francaise,nationalite, prime_premier_emploi, remuneration_annuelle_brute_avec_prime_premier_emploi)
+
+data2019 <- select(data2019, sexe, identifiant, date_diplome, filiere, remuneration_annuelle_brute, prime, remuneration_prime, remuneration_annuelle_brute_hors_prime_premier_emploi,nationalite_francaise,nationalite, prime_premier_emploi, remuneration_annuelle_brute_avec_prime_premier_emploi)
+
+data2020 <- select(data2020, sexe, identifiant, date_diplome, filiere, remuneration_annuelle_brute, prime, remuneration_prime, remuneration_annuelle_brute_hors_prime_premier_emploi,nationalite_francaise,nationalite, prime_premier_emploi, remuneration_annuelle_brute_avec_prime_premier_emploi)
+
+data2021 <- select(data2021, sexe, identifiant, date_diplome, filiere, remuneration_annuelle_brute, prime, remuneration_prime, remuneration_annuelle_brute_hors_prime_premier_emploi,nationalite_francaise,nationalite, prime_premier_emploi, remuneration_annuelle_brute_avec_prime_premier_emploi)
+
+data2022 <- select(data2022, sexe, identifiant, date_diplome, filiere, remuneration_annuelle_brute, prime, remuneration_prime, remuneration_annuelle_brute_hors_prime_premier_emploi,nationalite_francaise,nationalite, prime_premier_emploi, remuneration_annuelle_brute_avec_prime_premier_emploi)
+
+data2023 <- select(data2023, sexe, identifiant, date_diplome, filiere, remuneration_annuelle_brute, prime, remuneration_prime, remuneration_annuelle_brute_hors_prime_premier_emploi,nationalite_francaise,nationalite, prime_premier_emploi, remuneration_annuelle_brute_avec_prime_premier_emploi)
+
+```
+
+##Fusion des jeux de données
+```{r}
+donnees_totales <- rbind(data2018, data2019, data2020, data2021, data2022, data2023)
+```
+
+##Analyse des données
+```{r}
+#vérifier si le jeu de données a bien été crée : 
+exists("donnees_totales")
+
+#aperçu des premières lignes
+head(donnees_totales)
+
+#résumé statistique de chaque colonne dans ton dataframe
+summary(donnees_totales)
+
+#Structure du jeu de données
+str(donnees_totales)
+
+#dimensions du jeu de données
+dim(donnees_totales)
+
+```
+## Avoir les occurences des identifiants 
+
+```{r}
+#Compter les occurences de chaque identifiant
+identifiant_counts <- table(donnees_totales$identifiant)
+
+# Afficher le tableau
+identifiant_counts
+
+# Dans ton fichier R Markdown
+
+library(knitr)
+
+identifiant_counts_df <- as.data.frame(identifiant_counts)
+colnames(identifiant_counts_df) <- c("Identifiant", "Nombre_d_occurrences")
+
+kable(identifiant_counts_df)
+
+
+```
+
+## Identifiants réccurents seulement 
+
+```{r}
+library(knitr)
+
+# Création du data.frame des identifiants récurrents et leurs occurrences
+identifiants_recurrents <- identifiant_counts[identifiant_counts > 1]
+identifiants_recurrents_df <- data.frame(Identifiant = names(identifiants_recurrents),
+                                         Occurrences = as.integer(identifiants_recurrents))
+
+# Utilisation de kable pour un joli affichage en tableau
+kable(identifiants_recurrents_df)
+
+```
+
+```{r}
+library(knitr)
+library(kableExtra)
+
+# Filtrer les données pour obtenir seulement les entrées avec des identifiants récurrents
+donnees_recurrentes <- donnees_totales[donnees_totales$identifiant %in% names(identifiants_recurrents), ]
+
+# Utilisation de kable pour un joli affichage en tableau des premières lignes
+kable(head(donnees_recurrentes), "html", escape = FALSE) %>%
+  kable_styling(full_width = F) %>%
+  column_spec(1:ncol(donnees_recurrentes), 
+              extra_css = "padding-left:10px; padding-right:10px; text-align:center;")
+```
+
+## Identifiants non récurrents seulement 
+```{r}
+library(knitr)
+
+# Création du data frame des identifiants non récurrents et leurs occurrences
+identifiants_non_recurrents <- identifiant_counts[identifiant_counts == 1]
+identifiants_non_recurrents_df <- data.frame(Identifiant = names(identifiants_non_recurrents),
+                                             Occurrences = as.integer(identifiants_non_recurrents))
+
+# Utilisation de kable pour un joli affichage en tableau
+kable(identifiants_non_recurrents_df) %>%
+  kable_styling(full_width = F) %>%
+  column_spec(1:2, 
+              extra_css = "padding-left:10px; padding-right:10px; text-align:center;")
+```
+
+```{r}
+library(knitr)
+library(kableExtra)
+
+# Filtrer les données pour obtenir seulement les entrées avec des identifiants non récurrents
+donnees_non_recurrentes <- donnees_totales[!donnees_totales$identifiant %in% names(identifiants_recurrents), ]
+
+# Utilisation de kable pour un affichage en tableau des premières lignes
+kable(head(donnees_non_recurrentes), "html", escape = FALSE) %>%
+  kable_styling(full_width = F) %>%
+  column_spec(1:ncol(donnees_non_recurrentes), 
+              extra_css = "padding-left:10px; padding-right:10px; text-align:center;")
+```
+
+##Analyse exploratoire des données
+
+#Visualiser la distribution des salaires pour les individus avec plusieurs réponses
+```{r}
+library(ggplot2)
+library(scales) # pour la fonction comma() et pretty_breaks
+
+# Histogramme des salaires pour les individus récurrents
+
+# Définir les repères de l'axe des abscisses
+breaks_pretty <- pretty(donnees_recurrentes$remuneration_annuelle_brute, n = 7) # 'n' définit le nombre souhaité de repères
+
+# Convertir 'remuneration_annuelle_brute' en numèrique et gérer les virgules
+# donnees_recurrentes$remuneration_annuelle_brute <- gsub(",", "", donnees_recurrentes$remuneration_annuelle_brute) # Remove commas if any
+donnees_recurrentes$remuneration_annuelle_brute <- as.numeric(donnees_recurrentes$remuneration_annuelle_brute)
+
+
+ggplot(donnees_recurrentes, aes(x = remuneration_annuelle_brute)) +
+  geom_histogram(bins = 40, fill = "blue", color = "black") +
+  scale_x_continuous(
+    breaks = breaks_pretty, # Utiliser les repères générés par pretty()
+    labels = scales::label_comma() # Utiliser label_comma pour un formatage correct des nombres
+  ) +
+  labs(
+    title = "Distribution des Salaires pour les Individus Récurrents",
+    x = "Salaire Annuel Brut",
+    y = "Fréquence"
+  ) +
+  theme_minimal() +
+  theme(text = element_text(size = 12))
+```
+```{r}
+library(ggplot2)
+library(scales)  # pour les fonctions de formatage
+
+# Boîte à moustaches pour voir la dispersion et les éventuels outliers
+ggplot(donnees_recurrentes, aes(y = remuneration_annuelle_brute)) +
+  geom_boxplot(outlier.colour = "red", outlier.shape = 1) +
+  scale_y_continuous(labels = scales::comma) + 
+  labs(title = "Boîte à Moustaches des Salaires pour les Individus Récurrents",
+       y = "Salaire Annuel Brut") +
+  theme_minimal() +
+    theme(
+    axis.title.y = element_text(size = 12),  # Taille de texte pour les étiquettes des axes
+    plot.title = element_text(size = 14)  # Taille de texte pour le titre
+  )
+
+```
+#Visualiser la distribution des salaires pour les individus non réccurents
+```{r}
+library(ggplot2)
+library(scales) # pour la fonction comma() et pretty_breaks
+
+# Histogramme des salaires pour les individus récurrents
+
+# Définir les repères de l'axe des abscisses
+breaks_pretty <- pretty(donnees_non_recurrentes$remuneration_annuelle_brute, n = 7) # 'n' définit le nombre souhaité de repères
+
+# Convertir 'remuneration_annuelle_brute' en numèrique et gérer les virgules
+# donnees_non_recurrentes$remuneration_annuelle_brute <- gsub(",", "", donnees_recurrentes$remuneration_annuelle_brute) # Remove commas if any
+donnees_non_recurrentes$remuneration_annuelle_brute <- as.numeric(donnees_non_recurrentes$remuneration_annuelle_brute)
+
+
+ggplot(donnees_non_recurrentes, aes(x = remuneration_annuelle_brute)) +
+  geom_histogram(bins = 40, fill = "blue", color = "black") +
+  scale_x_continuous(
+    breaks = breaks_pretty, # Utiliser les repères générés par pretty()
+    labels = scales::label_comma() # Utiliser label_comma pour un formatage correct des nombres
+  ) +
+  labs(
+    title = "Distribution des Salaires pour les Individus Non Récurrents",
+    x = "Salaire Annuel Brut",
+    y = "Fréquence"
+  ) +
+  theme_minimal() +
+  theme(text = element_text(size = 12))
+```
+```{r}
+library(ggplot2)
+library(scales)  # pour les fonctions de formatage
+
+# Boîte à moustaches pour voir la dispersion et les éventuels outliers
+ggplot(donnees_non_recurrentes, aes(y = remuneration_annuelle_brute)) +
+  geom_boxplot(outlier.colour = "red", outlier.shape = 1) +
+  scale_y_continuous(labels = scales::comma) + 
+  labs(title = "Boîte à Moustaches des Salaires pour les Individus Non Récurrents",
+       y = "Salaire Annuel Brut") +
+  theme_minimal() +
+    theme(
+    axis.title.y = element_text(size = 12),  # Taille de texte pour les étiquettes des axes
+    plot.title = element_text(size = 14)  # Taille de texte pour le titre
+  )
+
+```
+#Calcul des moyennes de salaires des individus qui ont répondus plusieurs fois
+
+```{r}
+library(dplyr)
+
+# Convertir la colonne remuneration_prime en numérique si elle est de type caractère
+donnees_recurrentes <- donnees_recurrentes %>%
+  mutate(remuneration_prime = as.numeric(as.character(remuneration_prime)))
+
+donnees_non_recurrentes <- donnees_non_recurrentes %>%
+  mutate(remuneration_prime = as.numeric(as.character(remuneration_prime)))
+
+# Calculer la moyenne des salaires pour chaque individu récurrent
+#salaire_moyen_individus_recurrents <- donnees_recurrentes %>%
+#  group_by(identifiant,sexe) %>%
+#  summarize(moyenne_salaire = mean(remuneration_annuelle_brute, na.rm = TRUE)) %>%
+#  ungroup()  # Pour retirer le groupement après la summarization
+
+salaire_moyen_individus_recurrents <- donnees_recurrentes %>%
+  group_by(identifiant) %>%
+  summarize(
+    remuneration_annuelle_brute = mean(remuneration_annuelle_brute, na.rm = TRUE),
+    sexe = first(sexe),
+    date_diplome = first(date_diplome),
+    filiere = first(filiere),
+    nationalite_francaise = first(nationalite_francaise),
+    nationalite = first (nationalite),
+    prime = first(prime),
+    remuneration_prime = mean(remuneration_prime, na.rm = TRUE),
+    remuneration_annuelle_brute_hors_prime_premier_emploi = mean(remuneration_annuelle_brute_hors_prime_premier_emploi, na.rm = TRUE),
+    prime_premier_emploi = first(prime_premier_emploi),
+    remuneration_annuelle_brute_avec_prime_premier_emploi = mean(remuneration_annuelle_brute_avec_prime_premier_emploi, na.rm = TRUE),
+  ) %>%
+  ungroup()  # Pour retirer le groupement après la summarization
+
+
+salaire_moyen_individus_recurrents <- salaire_moyen_individus_recurrents %>%
+  distinct(identifiant, .keep_all = TRUE)
+
+# Afficher les premières lignes du nouveau dataframe
+head(salaire_moyen_individus_recurrents)
+
+```
+#vérification des occurences d'individus dans ce data frame
+Pour un individu, il n'y a plus qu'une seule ligne avec toutes les colonnes concernant le salaire (où il y a une moyenne des salaires de cette personne)
+```{r}
+# Recalculer les occurrences des identifiants après avoir utilisé `distinct`
+identifiant_counts_filtrees <- salaire_moyen_individus_recurrents %>%
+  count(identifiant, name = "Occurrences")
+
+# Afficher le tableau avec kable
+kable(identifiant_counts_filtrees, caption = "Occurrences des Identifiants après Nettoyage")
+
+```
+
+##Combinaison des salaires moyens des individus réccurents et de ceux non réccurents
+
+```{r}
+# Renommer la colonne pour qu'elle corresponde dans les deux dataframes
+#donnees_non_recurrentes <- donnees_non_recurrentes %>%
+#  rename(salaire_annuel_brut = moyenne_salaire)
+
+#salaire_moyen_individus_recurrents <- salaire_moyen_individus_recurrents %>%
+#  rename(salaire_annuel_brut = moyenne_salaire)
+
+# Combiner les deux ensembles de données
+donnees_combinees <- bind_rows(salaire_moyen_individus_recurrents, donnees_non_recurrentes)
+
+head(donnees_combinees)
+
+
+```
+
+#Traitement des NA pour la colonne 'remuneration_annuelle_brute' du data frame 'donnees_combinees'
+```{r}
+donnees_combinees_filtrees <- donnees_combinees %>%
+  filter(!is.na(remuneration_annuelle_brute))
+
+head(donnees_combinees_filtrees)
+
+```
+
+#Vérifier s'il y a toujours des occurences > 1 pour les individus :
+```{r}
+library(knitr)
+
+donnees_combinees_counts <- donnees_combinees_filtrees %>%
+  count(identifiant, name = "Occurrences")
+# Filtrer pour ne montrer que les identifiants avec plus d'une occurrence
+identifiants_recurrents_df <- donnees_combinees_counts %>%
+  filter(Occurrences > 1)
+
+# Afficher le tableau filtré avec kable
+kable(identifiants_recurrents_df, caption = "Identifiants récurrents dans donnees_combinees")
+
+```
+Donc ici, on voit bien qu'il n 'y a plus d'individus réccurents, le traitement a bien fonctionné (Le NA ici c'est juste pour faire le test).
+Encore une vérification dans le tableau suivant : 
+```{r}
+library(knitr)
+library(dplyr)
+
+# Compter les occurrences des identifiants dans donnees_combinees_filtrees
+identifiant_counts_filtrees <- donnees_combinees_filtrees %>%
+  count(identifiant, name = "Occurrences")
+
+# Affichage tableau
+kable(identifiant_counts_filtrees, caption = "Nombre d'occurrences par identifiant dans donnees_combinees_filtrees")
+
+```
+ 
+#Analyse exploratoire du data frame : donnees_combinees_filtrees
+
+```{r}
+#Statistiques descriptives :
+summary(donnees_combinees_filtrees)
+
+```
+
+
+```{r}
+library(ggplot2)
+ggplot(donnees_combinees_filtrees, aes(x = remuneration_annuelle_brute)) +
+  geom_histogram(bins = 30, fill = "blue",  color = "black") +
+  labs(title = "Distribution des Salaires", x = "Salaire Annuel Brut", y = "Fréquence")
+  #theme_minimal() +
+  #theme(text = element_text(size = 12))
+
+
+
+
+
+#ggplot(donnees_non_recurrentes, aes(x = remuneration_annuelle_brute)) +
+#  geom_histogram(bins = 40, fill = "blue", color = "black") +
+#  scale_x_continuous(
+#    breaks = breaks_pretty, # Utiliser les repères générés par pretty()
+#    labels = scales::label_comma() # Utiliser label_comma pour un formatage correct des nombres
+#  ) +
+#  labs(
+#    title = "Distribution des Salaires pour les Individus Non Récurrents",
+#    x = "Salaire Annuel Brut",
+#    y = "Fréquence"
+#  ) +
+#  theme_minimal() +
+#  theme(text = element_text(size = 12))
+```
+
+```{r}
+# Boîte à moustaches pour voir la dispersion et les éventuels outliers
+ggplot(donnees_combinees_filtrees, aes(y = remuneration_annuelle_brute)) +
+  geom_boxplot(outlier.colour = "red", outlier.shape = 1) +
+  scale_y_continuous(labels = scales::comma) + 
+  labs(title = "Boîte à Moustaches des Salaires genres confondus",
+       y = "Salaire Annuel Brut") +
+  theme_minimal() +
+    theme(
+    axis.title.y = element_text(size = 12),  # Taille de texte pour les étiquettes des axes
+    plot.title = element_text(size = 14)  # Taille de texte pour le titre
+  )
+
+```
+
+```{r}
+ggplot(donnees_combinees_filtrees, aes(x = sexe, y = remuneration_annuelle_brute)) +
+  geom_boxplot(outlier.colour = "red", outlier.shape = 1) +
+  scale_y_continuous(labels = scales::comma) + 
+  labs(title = "Salaires par Genre", x = "Sexe", y = "Salaire Annuel Brut")
+```
+
+```{r}
+# Charger la bibliothèque dplyr pour le traitement des données
+library(dplyr)
+
+# Calculer les outliers manuellement
+outliers <- donnees_combinees_filtrees %>%
+  group_by(sexe) %>%
+  summarize(
+    lower = quantile(remuneration_annuelle_brute, probs = 0.25) - 1.5 * IQR(remuneration_annuelle_brute),
+    upper = quantile(remuneration_annuelle_brute, probs = 0.75) + 1.5 * IQR(remuneration_annuelle_brute),
+    .groups = 'drop'  # Ajouté pour éviter les avertissements dans dplyr 1.0.0 et plus
+  ) %>%
+  left_join(donnees_combinees_filtrees, by = "sexe") %>%
+  filter(remuneration_annuelle_brute < lower | remuneration_annuelle_brute > upper)
+
+# Créer le boxplot de base sans outliers
+base_plot <- ggplot(donnees_combinees_filtrees, aes(x = sexe, y = remuneration_annuelle_brute)) +
+  geom_boxplot(outlier.shape = NA) +  # Suppression des outliers dans cette couche
+  labs(title = "Salaires par Genre", x = "Sexe", y = "Salaire Annuel Brut")
+
+# Ajouter les outliers avec des couleurs spécifiques pour chaque sexe
+final_plot <- base_plot + 
+  geom_point(data = outliers, aes(x = sexe, y = remuneration_annuelle_brute, colour = sexe), shape = 1) +
+  scale_colour_manual(values = c("Homme" = "blue", "Femme" = "red", "Ne souhaite pas répondre" = "grey")) +
+  theme(legend.position = "none")  # Cache la légende
+
+# Afficher le graphique final
+print(final_plot)
+
+```
+#Nombre de personnes qui ont répondus à l'enquête par filière 
+```{r}
+library(dplyr)
+
+reponses_par_filiere <- donnees_combinees_filtrees %>%
+  group_by(filiere) %>%
+  summarise(Nombre = n()) %>%
+  ungroup()
+
+library(ggplot2)
+
+ggplot(reponses_par_filiere, aes(x = "", y = Nombre, fill = filiere)) +
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar(theta = "y") +  # Coordonnées polaires pour le camembert
+  theme_void() +  # Thème vide sans axes ni étiquettes
+  theme(legend.title = element_blank()) +  # Pas de titre pour la légende
+  labs(title = "Répartition des Réponses par filière", fill = "Filière")  # Nom de la légende
+
+```
+
+```{r}
+# Compter le nombre de réponses par filière
+comptage_filiere <- donnees_combinees_filtrees %>%
+  group_by(filiere) %>%
+  summarise(Nombre = n()) %>%
+  ungroup()
+
+# Créer un graphique à points
+ggplot(comptage_filiere, aes(x = filiere, y = Nombre)) +
+  geom_point(stat = "identity", size = 3) +  # Utilisez size pour ajuster la taille des points
+  scale_y_continuous(limits = c(0, max(comptage_filiere$Nombre) * 1.1)) +  # Ajuster les limites pour un peu d'espace au-dessus du point le plus haut
+  coord_flip() + # Pour une meilleure lisibilité, les filières sur l'axe Y et les comptages sur l'axe X
+labs(y = "Nombre de Répondants", x = "Filière",
+title = "Nombre de Répondants par Filière") +
+theme_minimal() +
+theme(axis.text.y = element_text(angle = 0, hjust = 1))
+
+```
+
+#Nombre de personnes qui ont répondus à l'enquête par genre : 
+```{r}
+# Compter le nombre de réponses par sexe
+reponses_par_sexe <- donnees_combinees_filtrees %>%
+  group_by(sexe) %>%
+  summarise(Nombre = n()) %>%
+  ungroup()
+
+# Créer un diagramme en camembert
+#ggplot(reponses_par_sexe, aes(x = "", y = Nombre, fill = sexe)) +
+#  geom_bar(width = 1, stat = "identity") +
+#  coord_polar(theta = "y") +  # Coordonnées polaires pour le camembert
+#  theme_void() +  # Thème vide sans axes ni étiquettes
+#  theme(legend.title = element_blank()) +  # Pas de titre pour la légende
+#  labs(fill = "Sexe")  # Nom de la légende
+
+ggplot(reponses_par_sexe, aes(x = "", y = Nombre, fill = sexe)) +
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar(theta = "y") +
+  theme_void() +
+  scale_fill_manual(values = c("Femme" = "#EE6677",  
+                               "Homme" = "#4477AA",  
+                               "Ne souhaite pas répondre" = "grey50")) +
+  labs(title = "Répartition des Réponses par Genre",
+       fill = "Sexe") +
+  theme(legend.title = element_blank())
+
+
+```
+
+```{r}
+# Créer un diagramme en barres empilées
+ggplot(donnees_combinees_filtrees, aes(x = filiere, fill = sexe)) +
+  geom_bar(position = "fill") +
+  scale_y_continuous(labels = scales::percent) +
+  scale_fill_manual(values = c("Homme" = "#4477AA", "Femme" = "#EE6677", "Ne souhaite pas répondre" = "grey50")) +
+  labs(x = "Filière", y = "Pourcentage", fill = "Sexe",
+       title = "Répartition par Sexe au sein de chaque Filière") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+
+```
+```{r}
+# Créer un graphique à facettes
+ggplot(donnees_combinees_filtrees, aes(x = sexe, fill = sexe)) +
+  geom_bar() +
+  facet_wrap(~filiere) +
+  labs(x = "Sexe", y = "Nombre de Répondants", fill = "Sexe",
+       title = "Nombre de Répondants par Sexe et par Filière") +
+  theme_minimal() +
+  theme(legend.position = "bottom", strip.text.x = element_text(angle = 90))
+
+```
+
+
+```{r}
+library(ggplot2)
+
+ggplot(donnees_combinees_filtrees, aes(x = filiere, y = remuneration_annuelle_brute)) +
+  geom_boxplot(outlier.colour = "black", outlier.shape = 1) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +  # Incliner les étiquettes de l'axe x si elles sont trop longues
+  labs(title = "Boxplot de la Rémunération Annuelle Brute par Filière",
+       x = "Filière",
+       y = "Rémunération Annuelle Brute") +
+  theme_minimal()
+
+```
+```{r}
+#Normalisation des noms de filières : 
+donnees_combinees_filtrees <- donnees_combinees_filtrees %>%
+  mutate(
+    filiere = case_when(
+      filiere == "Microélectronique Et Automatique (MEA)" ~ "MEA",
+      filiere == "MicroÈlectronique Et Automatique (MEA)" ~ "MEA",
+      filiere == "GÈnie Biologique et Agroalimentaires (GBA)" ~ "GBA",
+      filiere == "Génie Biologique et Agroalimentaires (GBA)" ~ "GBA",
+      filiere == "Eau et GÈnie Civil (EGC - apprentissage)" ~ "EGC-app",
+      filiere == "Eau et Génie Civil (EGC - apprentissage)" ~ "EGC-app",
+      filiere == "Sciences et Technologies de l'Eau (STE)" ~ "STE",
+      filiere == "Sciences et Technologies de l Eau (STE)" ~ "STE",
+      filiere == "Systèmes Embarqués (SE - apprentissage)" ~ "SE-app",
+      filiere == "SystËmes EmbarquÈs (SE - apprentissage)" ~ "SE-app",
+      filiere == "Matériaux (MAT)" ~ "MAT",
+      filiere == "MatÈriaux (MAT)"  ~ "MAT",
+      filiere == "Mécanique et Interactions (MI)" ~ "MI",
+      filiere == "MÈcanique et Interactions (MI)" ~ "MI",
+      filiere == "Informatique et Gestion (IG)"  ~ "IG",
+      filiere == "Mécanique Structures Industrielles (MSI - apprentissage)" ~ "MSI-app",
+      filiere == "MÈcanique Structures Industrielles (MSI - apprentissage)" ~ "MSI-app",
+      filiere == "Energétique - énergies Renouvelables (EnR)" ~ "EnR",
+
+
+
+      # Ajoutez d'autres correspondances ici
+      TRUE ~ filiere  # Conserve la valeur actuelle si aucune des conditions ci-dessus n'est remplie
+    )
+  )
+
+# Liste des filières uniques
+filiere_unique <- unique(donnees_combinees_filtrees$filiere)
+
+# Afficher la liste des filières
+print(filiere_unique)
+
+```
+
+
+
+
+```{r}
+ggplot(donnees_combinees_filtrees, aes(x = filiere, y = remuneration_annuelle_brute, fill = filiere)) +
+  geom_boxplot(outlier.colour = "black", outlier.shape = 1) +
+  scale_fill_brewer(palette = "Paired") +  # Choisissez une palette de couleurs
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +  # Incliner les étiquettes de l'axe x si elles sont trop longues
+  labs(title = "Boxplot de la Rémunération Annuelle Brute par Filière",
+       x = "Filière",
+       y = "Rémunération Annuelle Brute") +
+  theme_minimal()
+
+```
+
+```{r}
+ggplot(donnees_combinees_filtrees, aes(x = filiere, y = remuneration_annuelle_brute, fill = filiere)) +
+  geom_boxplot() +
+  scale_fill_manual(values = c("GBA" = "chartreuse3", "IG" = "deeppink1", "MEA" = "plum", "STE" = "deepskyblue3", 
+                               "MI"="salmon3", "SE-app"="skyblue3", "MSI-app"="lightsteelblue", "MAT"="lightseagreen", "EnR"="wheat1", "EGC-app"="sienna1")) +  # Définir les couleurs manuellement
+  theme(axis.text.x = element_text(angle = 90, hjust = 1)) +  # Incliner les étiquettes de l'axe x si elles sont trop longues
+  labs(title = "Boxplot de la Rémunération Annuelle Brute par Filière",
+       x = "Filière",
+       y = "Rémunération Annuelle Brute") +
+  theme_minimal() +
+  theme(legend.position = "none")
+
+
+```
+
+```{r}
+ggplot(donnees_combinees_filtrees, aes(x = filiere, y = remuneration_annuelle_brute)) +
+  geom_boxplot(aes(fill = sexe), position = position_dodge(0.8), outlier.colour = "black", outlier.shape = 1) +
+  scale_fill_manual(values = c("Femme" = "#EE6677", "Homme" = "#4477AA", "Ne souhaite pas répondre" = "grey50")) +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+  labs(title = "Boxplot de la Rémunération Annuelle Brute par Filière et Sexe",
+       x = "Filière",
+       y = "Rémunération Annuelle Brute") +
+  theme_minimal() +
+  theme(legend.position = "bottom")  # Placez la légende en bas pour économiser de l'espace
+
+```
+
+#Maintenant on s'intéresse à la distribution des salaires par rapport à la nationalité
+
+```{r}
+# Vérifier les niveaux uniques pour la nationalité française
+unique(donnees_combinees_filtrees$nationalite_francaise)
+
+# Vérifier les niveaux uniques pour toutes les nationalités
+unique(donnees_combinees_filtrees$nationalite)
+```
+#Proportion des personnes qui ont répondus à la question de s'ils ont la nationalité française ou pas : 
+```{r}
+# Compter le nombre de réponses par catégorie de nationalité française
+reponses_nationalite <- donnees_combinees_filtrees %>%
+  mutate(nationalite_francaise = ifelse(nationalite_francaise == "", "Pas de réponse", nationalite_francaise)) %>%
+  count(nationalite_francaise) %>%
+  ungroup()
+
+# Créer un diagramme en barres
+ggplot(reponses_nationalite, aes(x = nationalite_francaise, y = n, fill = nationalite_francaise)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Nationalité Française", y = "Nombre de Répondants", 
+       title = "Nombre de Répondants par Statut de Nationalité Française") +
+  scale_fill_brewer(palette = "Set1") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+```{r}
+# Créer un diagramme en camembert
+ggplot(reponses_nationalite, aes(x = "", y = n, fill = nationalite_francaise)) +
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar(theta = "y") +
+  labs(fill = "Nationalité Française", 
+       title = "Proportion des Répondants par Statut de Nationalité Française") +
+  scale_fill_brewer(palette = "Set1") +
+  theme_void() +
+  theme(legend.title = element_blank(), legend.position = "bottom")
+
+```
+
+
+```{r}
+# Calculer la moyenne des salaires par catégorie de nationalité française
+moyenne_salaire_par_nationalite <- donnees_combinees_filtrees %>%
+  group_by(nationalite_francaise) %>%
+  summarise(moyenne_salaire = mean(remuneration_annuelle_brute, na.rm = TRUE)) %>%
+  ungroup()
+
+# Créer un graphique à barres des moyennes
+ggplot(moyenne_salaire_par_nationalite, aes(x = nationalite_francaise, y = moyenne_salaire, fill = nationalite_francaise)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Nationalité Française", y = "Salaire Annuel Brut Moyen", title = "Salaire Annuel Brut Moyen par Nationalité Française") +
+  scale_fill_brewer(palette = "Set1") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+```{r}
+ggplot(donnees_combinees_filtrees, aes(x = nationalite_francaise, y = remuneration_annuelle_brute, fill = nationalite_francaise)) +
+  geom_boxplot() +
+  labs(x = "Nationalité Française", y = "Salaire Annuel Brut", title = "Distribution du Salaire Annuel Brut par Nationalité Française") +
+  scale_fill_brewer(palette = "Set1") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+
+
+#Traitement des NA pour la colonne de nationalite_française :
+```{r}
+donnees_nettoyees_nationalite <- donnees_combinees_filtrees %>%
+  mutate(nationalite_francaise = ifelse(nationalite_francaise == "", "Inconnue", nationalite_francaise)) %>%
+  # Vous pouvez également choisir d'exclure les lignes avec des valeurs vides
+  filter(nationalite_francaise != "Inconnue")
+
+# Calculer la moyenne des salaires par catégorie de nationalité française
+moyenne_salaire_par_nationalite <- donnees_nettoyees_nationalite %>%
+  group_by(nationalite_francaise) %>%
+  summarise(moyenne_salaire = mean(remuneration_annuelle_brute, na.rm = TRUE)) %>%
+  ungroup()
+
+# Créer un graphique à barres des moyennes
+ggplot(moyenne_salaire_par_nationalite, aes(x = nationalite_francaise, y = moyenne_salaire, fill = nationalite_francaise)) +
+  geom_bar(stat = "identity", position = "dodge") +
+  labs(x = "Nationalité Française", y = "Salaire Annuel Brut Moyen", title = "Salaire Annuel Brut Moyen par Nationalité Française") +
+  scale_fill_brewer(palette = "Set1") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+```{r}
+ggplot(donnees_nettoyees_nationalite, aes(x = nationalite_francaise, y = remuneration_annuelle_brute, fill = nationalite_francaise)) +
+  geom_boxplot() +
+  labs(x = "Nationalité Française", y = "Salaire Annuel Brut", title = "Distribution du Salaire Annuel Brut par Nationalité Française") +
+  scale_fill_brewer(palette = "Set1") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 45, hjust = 1))
+
+```
+```{r}
+# Compter le nombre de réponses par catégorie de nationalité française dans donnees_nettoyees
+reponses_nationalite_nettoyees <- donnees_nettoyees_nationalite %>%
+  count(nationalite_francaise) %>%
+  ungroup()
+
+# Créer un diagramme en barres pour donnees_nettoyees
+ggplot(reponses_nationalite_nettoyees, aes(x = nationalite_francaise, y = n, fill = nationalite_francaise)) +
+  geom_bar(stat = "identity") +
+  labs(x = "Nationalité Française", y = "Nombre de Répondants", 
+       title = "Nombre de Répondants par Statut de Nationalité Française dans les Données Nettoyées") +
+  scale_fill_brewer(palette = "Set1") +
+theme_minimal() +
+theme(axis.text.x = element_text(angle = 45, hjust = 1))
+```
+
+```{r}
+# Créer un diagramme en camembert pour donnees_nettoyees
+ggplot(reponses_nationalite_nettoyees, aes(x = "", y = n, fill = nationalite_francaise)) +
+  geom_bar(width = 1, stat = "identity") +
+  coord_polar(theta = "y") +
+  labs(fill = "Nationalité Française", 
+       title = "Proportion des Répondants par Statut de Nationalité Française dans les Données Nettoyées") +
+  scale_fill_brewer(palette = "Set1") +
+  theme_void() +
+  theme(legend.title = element_blank(), legend.position = "bottom")
+
+```
+
+```{r}
+# Exporter vers un fichier CSV
+write.csv(donnees_combinees_filtrees, file = "donnees_combinees_filtrees.csv", row.names = FALSE)
+
+```
+

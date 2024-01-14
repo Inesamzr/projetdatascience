@@ -1,0 +1,247 @@
+---
+title: "ANOVA"
+author: "Eya"
+date: "2024-01-14"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Import des données 
+```{r}
+data2018 <- read.csv("/cloud/project/data/donnees_combinees_filtrees.csv")
+```
+
+#ANOVA SEXE :
+
+L'analyse de la variance (ANOVA) est une technique statistique puissante utilisée pour évaluer si des différences significatives existent entre les moyennes de plusieurs groupes. Dans notre étude, nous avons utilisé l'ANOVA pour déterminer si le sexe des individus a un impact significatif sur leurs salaires annuels bruts.
+
+H0 : Il n'y a aucune différence significative dans les salaires annuels bruts entre les groupes de sexe, leur moyennes de salaires sont égales
+H1 : Il existe des différences significatives dans les salaires annuels bruts entre au moins deux groupes de sexe.
+
+## Exécution de l'ANOVA
+```{r}
+resultat_anova <- aov(remuneration_annuelle_brute ~ sexe, data = donnees_combinees_filtrees)
+
+# Vérification des résultats de l'ANOVA
+summary(resultat_anova)
+
+
+```
+
+#Interprétation des résultats :
+Les résultats de l'ANOVA indiquent clairement que le sexe a un effet significatif sur les salaires annuels bruts.
+Détails : 
+Degré de Liberté (Df) : Pour la variable sexe, nous avons 2 degrés de liberté (niveaux de la variable sexe).
+Somme des Carrés (Sum Sq) : La somme des carrés associée à la variable sexe est de 3.034e+09. Cette valeur mesure la variation totale expliquée par le sexe des individus.
+Moyenne des Carrés (Mean Sq) : La moyenne des carrés pour la variable sexe est de 1.517e+09. Cette valeur représente la variation moyenne entre les groupes de sexe.
+P-valeur (Pr(>F)) : La P-valeur est de 1.6e-11, ce qui est bien inférieur au seuil de signification communément accepté de 0.05. Cette P-valeur indique que les différences observées entre les groupes de sexe ne sont pas dues au hasard, mais sont statistiquement significatives.
+Signif. codes : Les étoiles *** indiquent un haut degré de signification statistique, renforçant la conclusion que les différences entre les groupes de sexe sont significatives.
+
+
+L'ANOVA en elle-même ne nous dit pas quelles paires de groupes diffèrent. Pour obtenir des informations plus détaillées sur les différences spécifiques, nous allons effectuer quelques tests post-hoc tels que le test de Tukey. Ces tests nous aideront à déterminer quelles combinaisons de groupes de sexe présentent des différences significatives en termes de salaires annuels bruts.
+
+```{r}
+# Test de Tukey pour les comparaisons multiples
+test_tukey <- TukeyHSD(resultat_anova)
+
+# Affichez les résultats du test de Tukey
+print(test_tukey)
+
+
+```
+Les résultats du test de Tukey obtenus montrent les comparaisons multiples des moyennes entre les groupes de sexe (Homme, Femme, Ne souhaite pas répondre) en termes de salaires annuels bruts.
+
+#Interprétations : 
+Homme-Femme : La différence moyenne entre les salaires annuels bruts des hommes et des femmes est de 2451.217 unités. L'intervalle de confiance à 95% pour cette différence va de 1638.274 à 3264.16. La P-valeur associée est de 0.0000000, ce qui est bien inférieur à un seuil de signification de 0.05. Cela signifie qu'il existe une différence significative entre les salaires des hommes et des femmes.
+
+Ne souhaite pas répondre-Femme : La différence moyenne entre les salaires annuels bruts de ceux qui ne souhaitent pas répondre et des femmes est de -2322.390 unités. L'intervalle de confiance à 95% pour cette différence va de -20555.928 à 15911.15. La P-valeur associée est de 0.9520065, ce qui est bien supérieur à un seuil de signification de 0.05. Cela indique qu'il n'y a pas de différence significative entre les salaires de ceux qui ne souhaitent pas répondre et des femmes.
+
+Ne souhaite pas répondre-Homme : La différence moyenne entre les salaires annuels bruts de ceux qui ne souhaitent pas répondre et des hommes est de -4773.607 unités. L'intervalle de confiance à 95% pour cette différence va de -23000.792 à 13453.58. La P-valeur associée est de 0.8123674, ce qui est bien supérieur à un seuil de signification de 0.05. Cela indique qu'il n'y a pas de différence significative entre les salaires de ceux qui ne souhaitent pas répondre et des hommes.
+
+Conclusion : les résultats du test de Tukey indiquent qu'il existe une différence significative entre les salaires des hommes et des femmes et cette information nous aidera à comprendre les disparités salariales en fonction du sexe dans nos données. 
+
+#ANOVA FILIERE :
+Création d'un modèle ANOVA qui compare les moyennes de remuneration_annuelle_brute entre les différents niveaux de la variable filière.
+```{r}
+# Exécution de l'ANOVA pour la variable filière
+resultat_anova_filiere <- aov(remuneration_annuelle_brute ~ filiere, data = donnees_combinees_filtrees)
+
+# Vérification des résultats de l'ANOVA pour la variable filière
+summary(resultat_anova_filiere)
+
+```
+#Interprétation des résultats :
+Df : Il y a 9 degrés de liberté pour la variable filière.
+
+Sum Sq (Somme des Carrés) : La somme des carrés associée à la variable filière est de 1.236e+10. Cette valeur mesure la variation totale expliquée par la filière.
+
+Mean Sq (Moyenne des Carrés) : La moyenne des carrés pour la variable filière est de 1.373e+09. Cette valeur représente la variation moyenne entre les groupes de filière.
+
+F value (Statistique F) : La statistique F de l'ANOVA est de 24.32. Elle compare la variation entre les groupes (due à la filière) à la variation au sein des groupes (variation résiduelle). Une valeur élevée de F suggère que les moyennes de groupe sont différentes.
+
+Pr(>F) (P-valeur) : La P-valeur associée à la statistique F est très proche de zéro (<2e-16), ce qui signifie que la P-valeur est extrêmement faible. Une P-valeur très faible indique que les différences observées entre les groupes de filière ne sont pas dues au hasard, mais sont statistiquement significatives.
+
+Signif. codes : Les étoiles *** indiquent un haut degré de signification statistique, ce qui confirme que les différences entre les groupes de filière sont significatives.
+
+En interprétant ces résultats, nous pouvons conclure que la variable filière a un impact significatif sur les salaires annuels bruts. Les moyennes de salaire entre les différentes filières sont différentes les unes des autres de manière statistiquement significative.
+
+```{r}
+library(stats)
+
+# Exécutez le test de Tukey pour les comparaisons multiples
+test_tukey_filiere <- TukeyHSD(resultat_anova_filiere)
+
+# Affichez les résultats du test de Tukey
+print(test_tukey_filiere)
+
+
+```
+
+#Description : 
+Chaque ligne du résultat représente une paire de comparaisons entre deux niveaux de filière.
+Les colonnes sont les suivantes :
+diff : La différence moyenne entre les deux niveaux de filière comparés.
+lwr : La limite inférieure de l'intervalle de confiance à 95% de la différence.
+upr : La limite supérieure de l'intervalle de confiance à 95% de la différence.
+p adj : La P-valeur ajustée pour la comparaison. Cette P-valeur est corrigée pour les comparaisons multiples.
+
+#Interprétaion : 
+Les paires de filières qui ont des P-valeurs très faibles (proches de zéro) sont statistiquement significatives. Cela signifie qu'il y a des différences significatives entre ces filières en termes de salaires annuels bruts.
+
+Exemple des paires où on retrouve des différences significatives en termes de salaires annuels bruts (P-valeur ajustée < 0.05) :
+IG-EGC-app
+STE-EGC-app
+GBA-IG 
+MAT-GBA
+MEA-GBA
+MEA-IG 
+STE-IG
+MAT-IG
+STE-GBA
+MAT-STE
+
+Les paires de filières avec des P-valeurs élevées ne présentent pas de différences significatives en termes de salaires annuels bruts.
+
+Exemple des paires où on ne retrouve pas des différences significatives en termes de salaires annuels bruts (P-valeur ajustée > 0.05) :
+EnR-EGC-app
+MAT-EGC-app  
+MSI-app-IG  
+
+
+# ANOVA sur nationalite_francaise
+* Pour les individus qui ont répondu par oui ou par non pour cette question : 
+```{r}
+# Excluer les observations avec des valeurs vides dans la variable nationalite_francaise
+donnees_filtrees_sans_vide_nationalite_francaise <- donnees_combinees_filtrees[donnees_combinees_filtrees$nationalite_francaise != " ", ]
+
+# Effectuez l'ANOVA avec la variable nationalite_francaise
+resultat_anova_nationalite_francaise <- aov(remuneration_annuelle_brute ~ nationalite_francaise, data = donnees_filtrees_sans_vide_nationalite_francaise)
+
+# Affichez les résultats de l'ANOVA
+summary(resultat_anova_nationalite_francaise)
+
+```
+#Interprétation des résultats :
+Df : Il y a 2 degrés de liberté pour la variable "nationalite_francaise" et 2289 degrés de liberté pour les résidus.
+
+Sum Sq: La somme des carrés entre les groupes (nationalités françaises) est de 2.004e+08, tandis que la somme des carrés des résidus est de 1.410e+11.
+
+Mean Sq : La moyenne des carrés entre les groupes est de 100212617, et la moyenne des carrés des résidus est de 61603470.
+
+F value : La valeur F est de 1.627.
+
+Pr(>F) : La p-valeur associée à la statistique F est de 0.197.
+
+Avec ces résultats, nous ne pouvons pas rejeter l'hypothèse nulle (H0) selon laquelle les moyennes des salaires annuels bruts sont égales entre les groupes de nationalités françaises. La p-valeur est de 0.197, ce qui est supérieur au seuil de signification de 0.05 . Cela indique qu'il n'y a pas de preuve statistiquement significative de différences significatives entre les nationalités françaises en termes de salaires annuels bruts.
+=> Avoir la nationalité française ou pas n'a pas un impact significatif sur les salaires annuels bruts.
+
+
+##ANOVA sur la nationalité 
+*Pour ceux qui n'ont pas répondus à cette question, nous concidérons qu'ils sont français 
+```{r}
+# Copiez le data frame original dans un nouveau data frame
+donnees_sansVide_nationalite <- donnees_combinees_filtrees
+
+# Remplacez les valeurs vides dans la variable "nationalite" par "française"
+donnees_sansVide_nationalite$nationalite <- ifelse(donnees_sansVide_nationalite$nationalite == " ", "française", donnees_sansVide_nationalite$nationalite)
+
+# Effectuez l'ANOVA avec la variable "nationalite" dans le nouveau data frame
+resultat_anova_nationalite <- aov(remuneration_annuelle_brute ~ nationalite, data = donnees_sansVide_nationalite)
+
+# Affichez les résultats de l'ANOVA
+summary(resultat_anova_nationalite)
+
+```
+#Interprètation des résultats :
+Df : Il y a 42 degrés de liberté pour la variable "nationalite" et 2249 degrés de liberté pour les résidus.
+
+Sum Sq : La somme des carrés entre les groupes (nationalités) est de 1.332e+10 et la somme des carrés des résidus est de 1.279e+11.
+
+Mean Sq : La moyenne des carrés entre les groupes est de 317233191 et la moyenne des carrés des résidus est de 56863927.
+
+F value : La statistique de test F est de 5.579.
+
+Pr(>F) : La valeur p est très proche de zéro (Pr(>F) < 2e-16), ce qui signifie que la variable "nationalite" a un impact significatif sur la variable "remuneration_annuelle_brute".
+
+Signif. codes : Les étoiles () indiquent le niveau de significativité. Ici, trois étoiles (**) signifient une très forte significativité (p < 0.001), ce qui confirme que la variable "nationalite" a un impact significatif sur les salaires annuels bruts.
+
+
+
+*Pour ceux qui n'ont pas répondus à cette question, nous les enlèvons de l'analyse
+```{r}
+# Excluez les observations avec des valeurs vides dans la variable "nationalite"
+donnees_filtrees_sans_vide_nationalite <- donnees_combinees_filtrees[donnees_combinees_filtrees$nationalite != "", ]
+
+# Effectuez l'ANOVA avec la variable "nationalite"
+resultat_anova_nationalite <- aov(remuneration_annuelle_brute ~ nationalite, data = donnees_filtrees_sans_vide_nationalite)
+
+# Affichez les résultats de l'ANOVA
+summary(resultat_anova_nationalite)
+
+```
+#Interprétation des résultats : 
+Df : Il y a 41 degrés de liberté pour la variable "nationalite" et 92 degrés de liberté pour les résidus.
+
+Sum Sq : La somme des carrés entre les groupes (nationalités) est de 1.318e+10 et la somme des carrés des résidus est de 7.134e+09.
+
+Mean Sq : La moyenne des carrés entre les groupes est de 321502363 et la moyenne des carrés des résidus est de 77547747.
+
+F value : La statistique de test F est de 4.146.
+
+Pr(>F) : La valeur p est très petite (Pr(>F) < 7.77e-09), ce qui signifie que la variable "nationalite" a un impact significatif sur la variable "remuneration_annuelle_brute".
+
+Signif. codes : les étoiles (**) signifient une très forte significativité (p < 0.001), ce qui confirme que la variable "nationalite" a un impact significatif sur les salaires annuels bruts.
+
+
+=> ici nous avons traité les valeurs vides de 2 manières différentes pour voir si cela change quelque chose. Dans les 2 cas nous arrivons à la conclusion que la variable "nationalite" a un impact significatif sur les salaires annuels bruts.
+
+
+##ANOVA prime
+```{r}
+# Afficher les valeurs uniques de la variable "prime"
+unique(donnees_combinees_filtrees$prime)
+
+```
+
+```{r}
+# Exclure les observations avec des valeurs vides dans la variable "prime"
+donnees_filtrees_sans_vide_prime <- donnees_combinees_filtrees[donnees_combinees_filtrees$prime != " ", ]
+
+# Effectuez l'ANOVA avec la variable "prime"
+resultat_anova_prime <- aov(remuneration_annuelle_brute ~ prime, data = donnees_filtrees_sans_vide_prime)
+
+# Affichez les résultats de l'ANOVA
+summary(resultat_anova_prime)
+
+```
+
+
+
+
+
+
+
+
