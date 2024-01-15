@@ -11,12 +11,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ##Import des données 
 ```{r}
-data2018 <- read.csv("/cloud/project/data/2018.csv")
-data2019 <- read.csv("/cloud/project/data/2019.csv")
-data2020 <- read.csv("/cloud/project/data/2020.csv")
-data2021 <- read.csv("/cloud/project/data/2021.csv")
-data2022 <- read.csv("/cloud/project/data/2022.csv")
-data2023 <- read.csv("/cloud/project/data/2023_axe1.csv")
+library(dplyr)
+
+data2018 <- read.csv("../2018.csv")
+data2019 <- read.csv("../2019.csv")
+data2020 <- read.csv("../2020.csv")
+data2021 <- read.csv("../2021.csv")
+data2022 <- read.csv("../2022.csv")
+data2023 <- read.csv("../2023_axe1.csv")
 
 #homogénéisation de colonnes
 data2020<- data2020 %>% rename(sexe = Genre)
