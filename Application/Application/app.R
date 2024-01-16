@@ -32,6 +32,14 @@ filtered_data <- data[!is.na(data$remuneration_prime) & data$type_combined != ""
 
 filtered_data2 <- data[!is.na(data$remuneration_prime) & data$filiere_combined2 != ""& data$filiere_combined2 != "NA",]
 
+moyennes_par_groupe <- data %>%
+  group_by(filiere_combined2, type_combined, date_diplome) %>%
+  summarise(
+    moyenne_remuneration = mean(remuneration_prime, na.rm = TRUE),
+  )
+
+
+
 ui <- fluidPage(
   
   titlePanel("Analyses Formation App"),
@@ -89,7 +97,21 @@ ui <- fluidPage(
                  plotOutput("boxplot_datediplome")
                )
              )
+    ),
+    tabPanel("Analyse des Moyennes par Groupe",
+             sidebarLayout(
+               sidebarPanel(
+                 checkboxGroupInput("filieress", "Sélectionnez une filière", unique(data$filiere_combined2)),
+                 checkboxGroupInput("type_formationss", "Sélectionnez un type de formation", unique(data$type_combined)),
+                 checkboxGroupInput("date_diplomess", "Sélectionnez une date de diplomation", choices = c("2015","2016","2017","2018","2019","2020","2021","2022"))
+               ),
+               mainPanel(
+                 plotOutput("moyennes_plot")
+               )
+             ),
     )
+    
+    
   )
 )
 
@@ -179,6 +201,32 @@ server <- function(input, output) {
       theme_minimal() +
       theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
   }, height = 600, width = 1200) 
+  
+  filtered_data_moyenne <- reactive({
+    filter_data_moyenne <- moyennes_par_groupe
+    if (!is.null(input$filieress)) {
+      filter_data_moyenne <- filter_data_moyenne[filter_data_moyenne$filiere_combined2 == input$filieress, ]
+    }
+    if (!is.null(input$type_formationss)) {
+      filter_data_moyenne <- filter_data_moyenne[filter_data_moyenne$type_combined == input$type_formationss, ]
+    }
+    if (!is.null(input$date_diplomess)) {
+      filter_data_moyenne <- filter_data_moyenne[filter_data_moyenne$date_diplome == input$date_diplomess, ]
+    }
+    filter_data_moyenne
+  })
+  
+  output$moyennes_plot <- renderPlot({
+    ggplot(filtered_data_moyenne(), aes(x = factor(filiere_combined2), y = moyenne_remuneration, fill = factor(type_combined), fill = factor(date_diplome))) +
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(title = "Moyennes par Groupe",
+           x = "Filière",
+           y = "Moyenne de Rémunération") +
+      scale_fill_brewer(palette = "Set2") +
+      theme_minimal()
+  })
+  
+  
   
 }
 shinyApp(ui = ui, server = server)

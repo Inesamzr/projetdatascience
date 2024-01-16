@@ -262,6 +262,17 @@ boxplot(remuneration_prime ~ date_diplome, data = data)
 ```
 
 
+```{r}
+library(dplyr)
+
+moyennes_par_groupe <- data %>%
+  group_by(filiere, type_formation, date_diplome) %>%
+  summarise(
+    moyenne_remuneration = mean(remuneration_prime, na.rm = TRUE),
+  )
+
+print(moyennes_par_groupe)
+```
 
 
 
