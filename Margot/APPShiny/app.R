@@ -47,6 +47,44 @@ data3$filiere <- fct_collapse(data3$filiere,
 
 # Define UI
 ui <- fluidPage(
+  tags$style(HTML("
+    body {
+      font-family: 'Arial', sans-serif;
+      background-color: #e6f7ff; /* Light Blue */
+      margin: 0;
+      padding: 0;
+    }
+
+    .shiny-tab-content {
+      padding: 20px;
+    }
+
+    h1 {
+      color: #333333;
+    }
+
+    /* Add CSS for buttons */
+    .btn-default {
+      background-color: #003366; /* Dark Blue */
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      text-align: center;
+      text-decoration: none;
+      display: inline-block;
+      font-size: 16px;
+      margin: 4px 2px;
+      cursor: pointer;
+      border-radius: 4px;
+    }
+
+    /* Add CSS for aligned checkboxes */
+    .checkbox-inline {
+      display: inline-block;
+      margin-right: 10px; /* Adjust the margin as needed */
+    }
+
+  ")),
   titlePanel("Rémunération Premier Emploi - Shiny App"),
   tabsetPanel(
     tabPanel("Secteur d'activité", 
