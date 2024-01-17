@@ -304,7 +304,7 @@ L'absence d'effet significatif de l'interaction indique que l'influence du sexe 
 
 
 
-#ANOVA à 2 variables : Sexe/Nationalité
+<!-- #ANOVA à 2 variables : Sexe/Nationalité -->
 ```{r}
 # Chargement des packages nécessaires
 if (!require(stats)) install.packages("stats")

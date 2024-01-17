@@ -7,6 +7,8 @@ output:
     fig_height: 9
 ---
 
+
+
 ```{r setup}
 library(ggplot2)
 library(dplyr)
@@ -88,6 +90,24 @@ ggplot(data3, aes(x = filiere, y = remuneration_annuelle_brute_avec_prime_premie
   theme_minimal() +
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
+# Charger les bibliothèques nécessaires
+library(car)
+library(rstatix)
+
+# Test de Tukey pour la rémunération du premier emploi avec la localisation et le pays
+tukey_test_loc_pays <- TukeyHSD(aov(remuneration_annuelle_brute_avec_prime_premier_emploi ~ localisation_premier_emploi * pays_premier_emploi, data = data2))
+print("Test de Tukey pour la rémunération du premier emploi avec la localisation et le pays :")
+print(tukey_test_loc_pays)
 
 
+# ANOVA à deux facteurs pour la rémunération du premier emploi avec le sexe et le secteur d'activité
+anova_sex_secteur <- aov(remuneration_annuelle_brute_avec_prime_premier_emploi ~ sexe * secteur_premiere_entreprise, data = data1)
+print("ANOVA à deux facteurs pour la rémunération du premier emploi avec le sexe et le secteur d'activité :")
+print(anova_sex_secteur)
+
+
+# Régression linéaire pour la rémunération du premier emploi avec la filière et la date d'obtention du diplôme
+lm_model <- lm(remuneration_annuelle_brute_avec_prime_premier_emploi ~ filiere + date_diplome, data = data3)
+print("Régression linéaire pour la rémunération du premier emploi avec la filière et la date d'obtention du diplôme :")
+print(summary(lm_model))
 ```
