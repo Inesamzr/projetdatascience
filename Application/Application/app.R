@@ -150,29 +150,47 @@ ui <- fluidPage(
     ),
     
     tabPanel("Analyse Secteur d'activité Salaire Premier Emploi", 
+             sidebarLayout(
+               sidebarPanel(
              actionButton("selectAll1", "Sélectionner tout"),
              actionButton("deselectAll1", "Désélectionner tout"),
              checkboxGroupInput("genderInput", "Sélectionnez le sexe:", 
                                 choices = c("Homme", "Femme"), selected = "Homme"),
              checkboxGroupInput("sectorInput", "Sélectionnez le secteur d'activité:",
                                 choices = unique(data1$secteur_premiere_entreprise), selected = unique(data1$secteur_premiere_entreprise)),
-             plotOutput("plot1")),
+              ),
+             mainPanel(
+             plotOutput("plot1"))
+             ),
+    ),
     tabPanel("Analyse Localisation géographique Salaire Premier Emploi", 
+             sidebarLayout(
+               sidebarPanel(
              actionButton("selectAll2", "Sélectionner tout"),
              actionButton("deselectAll2", "Désélectionner tout"),
              checkboxGroupInput("localisationInput", "Sélectionnez la localisation:",
                                 choices = unique(data2$localisation_premier_emploi), selected = unique(data2$localisation_premier_emploi)),
              checkboxGroupInput("countryInput", "Sélectionnez le pays:",
                                 choices = unique(data2$pays_premier_emploi), selected = unique(data2$pays_premier_emploi)),
-             plotOutput("plot2")),
+               ),
+             mainPanel(
+             plotOutput("plot2"))
+             ),
+    ),
     tabPanel("Filière et Date de Diplôme Salaire Premier Emploi", 
+             sidebarLayout(
+               sidebarPanel(
              actionButton("selectAll3", "Sélectionner tout"),
              actionButton("deselectAll3", "Désélectionner tout"),
              checkboxGroupInput("filiereInput", "Sélectionnez la filière:",
                                 choices = unique(data3$filiere), selected = unique(data3$filiere)),
              checkboxGroupInput("dateDiplomeInput", "Sélectionnez la date de diplôme:",
                                 choices = unique(data3$date_diplome), selected = unique(data3$date_diplome)),
+               ),
+             mainPanel(
              plotOutput("plot3"))
+             )
+    )
     
     
   )
