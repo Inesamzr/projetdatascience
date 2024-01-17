@@ -444,6 +444,28 @@ final_plot <- base_plot +
 print(final_plot)
 
 ```
+
+```{r}
+# Supposons que votre dataframe s'appelle 'donnees' et la colonne de salaire 'salaire_annuel_brut'
+# Et que la colonne 'sexe' contient les genres
+
+# Extraction des statistiques pour les femmes
+stats_femmes <- boxplot.stats(donnees_combinees_filtrees$remuneration_annuelle_brute[donnees_combinees_filtrees$sexe == "Femme"])
+
+# Extraction des statistiques pour les hommes
+stats_hommes <- boxplot.stats(donnees_combinees_filtrees$remuneration_annuelle_brute[donnees_combinees_filtrees$sexe == "Homme"])
+
+# Affichage des statistiques pour les femmes
+print(paste("Quartiles pour les femmes:", stats_femmes$stats))
+print(paste("Valeurs aberrantes pour les femmes:", stats_femmes$out))
+
+# Affichage des statistiques pour les hommes
+print(paste("Quartiles pour les hommes:", stats_hommes$stats))
+print(paste("Valeurs aberrantes pour les hommes:", stats_hommes$out))
+
+```
+
+
 #Nombre de personnes qui ont répondus à l'enquête par filière 
 ```{r}
 library(dplyr)
@@ -841,28 +863,41 @@ ggplot(donnees_combinees_filtrees, aes(x = nationalite, y = remuneration_annuell
 
 ```{r}
 # Regroupement des nationalités moins fréquentes sous une catégorie "Autre"
-seuil <- 10  # Définir le seuil selon votre jeu de données
-nationalite_counts <- donnees_combinees_filtrees %>%
-  group_by(nationalite) %>%
-  summarise(Count = n(), .groups = 'drop')
+#seuil <- 10  # Définir le seuil selon votre jeu de données
+#nationalite_counts <- donnees_combinees_filtrees %>%
+ # group_by(nationalite) %>%
+#  summarise(Count = n(), .groups = 'drop')
 
 # Créer une nouvelle colonne pour le regroupement
-donnees_combinees_filtrees <- donnees_combinees_filtrees %>%
-  mutate(nationalite_grouped = ifelse(nationalite %in% nationalite_counts$nationalite[nationalite_counts$Count < seuil], "Autre", nationalite))
+#donnees_combinees_filtrees <- donnees_combinees_filtrees %>%
+ # mutate(nationalite_grouped = ifelse(nationalite %in% nationalite_counts$nationalite[nationalite_counts$Count < seuil], "Autre", nationalite))
 
 # Convertir la nouvelle colonne en facteur
-donnees_combinees_filtrees$nationalite_grouped <- factor(donnees_combinees_filtrees$nationalite_grouped)
+#donnees_combinees_filtrees$nationalite_grouped <- factor(donnees_combinees_filtrees$nationalite_grouped)
 
 # Création d'un boxplot avec les nationalités regroupées
-ggplot(donnees_combinees_filtrees, aes(x = nationalite_grouped, y = remuneration_annuelle_brute)) +
-  geom_boxplot() +
-  labs(x = "Nationalité", y = "Salaire Annuel Brut",
-       title = "Boxplot des Salaires par Nationalité avec Regroupement") +
-  theme_minimal() +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+#ggplot(donnees_combinees_filtrees, aes(x = nationalite_grouped, y = remuneration_annuelle_brute)) +
+ # geom_boxplot() +
+  #labs(x = "Nationalité", y = "Salaire Annuel Brut",
+   #    title = "Boxplot des Salaires par Nationalité avec Regroupement") +
+  #theme_minimal() +
+  #theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
 
 ```
 
 
+```{r}
+# Pour chaque filière, calculer les quartiles et la médiane
+quartiles_medianes <- donnees_combinees_filtrees %>%
+  group_by(filiere) %>%
+  summarise(
+    Q1 = quantile(remuneration_annuelle_brute, 0.25, na.rm = TRUE),
+    Mediane = median(remuneration_annuelle_brute, na.rm = TRUE),
+    Q3 = quantile(remuneration_annuelle_brute, 0.75, na.rm = TRUE)
+  )
 
+# Afficher les résultats
+print(quartiles_medianes)
+
+```
 
