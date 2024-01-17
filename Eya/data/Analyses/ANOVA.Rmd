@@ -112,7 +112,6 @@ p adj : La P-valeur ajustée pour la comparaison. Cette P-valeur est corrigée p
 Les paires de filières qui ont des P-valeurs très faibles (proches de zéro) sont statistiquement significatives. Cela signifie qu'il y a des différences significatives entre ces filières en termes de salaires annuels bruts.
 
 Exemple des paires où on retrouve des différences significatives en termes de salaires annuels bruts (P-valeur ajustée < 0.05) :
-IG-EGC-app
 STE-EGC-app
 GBA-IG 
 MAT-GBA
@@ -120,7 +119,6 @@ MEA-GBA
 MEA-IG 
 STE-IG
 MAT-IG
-STE-GBA
 MAT-STE
 
 Les paires de filières avec des P-valeurs élevées ne présentent pas de différences significatives en termes de salaires annuels bruts.
@@ -239,9 +237,112 @@ summary(resultat_anova_prime)
 ```
 
 
+#Régression linèaire : 
+```{r}
+# Chargement de la librairie nécessaire
+library(lmtest)
+
+# Régression linéaire avec interaction entre sexe et filière
+modele_regression <- lm(remuneration_annuelle_brute ~ sexe * filiere, data = donnees_combinees_filtrees)
+
+# Afficher le résumé du modèle
+summary(modele_regression)
+
+# Pour une analyse détaillée des diagnostics de régression
+# Cela peut inclure des graphiques de résidus, des tests d'hétéroscédasticité, etc.
+par(mfrow = c(2, 2))
+plot(modele_regression)
+
+# Test de Breusch-Pagan pour l'hétéroscédasticité
+bptest(modele_regression)
+
+# Remarque : Si l'hétéroscédasticité est présente, envisage d'utiliser des méthodes robustes pour estimer les erreurs standard.
+
+```
+
+#ANOVA à 2 variables : Sexe/Filière
+
+```{r}
+
+# Chargement des packages nécessaires
+if (!require(ggplot2)) install.packages("ggplot2")
+if (!require(dplyr)) install.packages("dplyr")
+if (!require(stats)) install.packages("stats")
+if (!require(multcomp)) install.packages("multcomp")
+
+library(ggplot2)
+library(dplyr)
+library(stats)
+library(multcomp)
+
+# Préparation des données
+donnees_combinees_filtrees <- donnees_combinees_filtrees %>%
+  mutate(sexe = as.factor(sexe),
+         filiere = as.factor(filiere),
+         remuneration_annuelle_brute = as.numeric(remuneration_annuelle_brute))
+
+# Réalisation de l'ANOVA
+modele_anova <- aov(remuneration_annuelle_brute ~ sexe * filiere, data = donnees_combinees_filtrees)
+anova_resultat <- summary(modele_anova)
+
+# Affichage du résultat de l'ANOVA
+print(anova_resultat)
+
+
+```
+
+#Interprétation : 
+Effet du sexe sur les salaires : La variable sexe a un effet significatif sur les salaires (p < 0.001).
+
+Effet de la filière sur les salaires : La variable filiere a également un effet significatif sur les salaires (p < 0.001).
+
+Interaction entre le sexe et la filière : L'interaction sexe:filiere n'a pas d'effet significatif sur les salaires (p = 0.89), ce qui suggère que l'effet du sexe sur les salaires ne varie pas significativement d'une filière à l'autre.
+
+
+=> Les différences significatives de salaires en fonction du sexe et de la filière suggèrent que ces deux facteurs ont un impact indépendant sur les salaires.
+L'absence d'effet significatif de l'interaction indique que l'influence du sexe sur les salaires est similaire à travers les différentes filières. En d'autres termes, la filière ne modifie pas la façon dont le sexe affecte les salaires.
 
 
 
+#ANOVA à 2 variables : Sexe/Nationalité
+```{r}
+# Chargement des packages nécessaires
+if (!require(stats)) install.packages("stats")
+library(stats)
 
+# Préparation des données (conversion en facteurs si nécessaire)
+donnees_combinees_filtrees$sexe <- as.factor(donnees_combinees_filtrees$sexe)
+donnees_combinees_filtrees$nationalite <- as.factor(donnees_combinees_filtrees$nationalite)
+
+# Réalisation de l'ANOVA à deux facteurs
+modele_anova <- aov(remuneration_annuelle_brute ~ sexe * nationalite, data = donnees_combinees_filtrees)
+
+# Affichage du résumé du modèle ANOVA
+summary(modele_anova)
+
+```
+
+#Interprétation : 
+
+Effet du sexe sur les salaires : La variable sexe a un effet significatif sur les salaires (p < 0.001). Cela indique des différences notables de salaires en fonction du sexe.
+
+Effet de la nationalité sur les salaires : La variable nationalite a également un effet significatif sur les salaires (p < 0.001). Cela suggère des variations de salaires en fonction de la nationalité des individus.
+
+Interaction entre le sexe et la nationalité : L'interaction sexe:nationalite est également significative (p < 0.001). Cela indique que l'effet du sexe sur les salaires varie en fonction de la nationalité.
+
+=> Les résultats indiquent que non seulement le sexe et la nationalité influencent indépendamment les salaires, mais également que l'impact du sexe sur les salaires n'est pas uniforme à travers les différentes nationalités. En d'autres termes, la différence de salaire entre les sexes peut être plus prononcée dans certaines nationalités que dans d'autres.
+
+Test de Tukey : 
+```{r}
+# Réalisation du test de Tukey pour les comparaisons multiples post-ANOVA
+tukey_test <- TukeyHSD(modele_anova, "sexe:nationalite")
+
+# Affichage des résultats du test de Tukey
+print(tukey_test)
+
+```
+
+=> Femme:Albanaise-Femme: La différence de salaire entre les femmes albanaises et les femmes (toutes nationalités confondues) est également significative avec une p-valeur de 0.
+Femme:Suisse-Femme: La différence de salaire entre les femmes suisses et les femmes (toutes nationalités confondues) est significative avec une p-valeur très faible (0.0000054).
 
 

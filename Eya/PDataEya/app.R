@@ -28,7 +28,9 @@ ui <- fluidPage(
       actionButton("btnSalaires", "Salaires par Genre"),
       actionButton("btnSexe", "Réponses par Sexe"),
       actionButton("btnFiliere", "Rémunération Annuelle Brute par Filière"),
-      actionButton("btnFiliereGenre", "Rémunération Annuelle Brute par Genre par Filière")
+      actionButton("btnFiliereGenre", "Rémunération Annuelle Brute par Genre par Filière"),
+      # Cases à cocher pour choisir la filèreGenre
+      checkboxGroupInput("filiere", "Choisir des filières :", choices = unique(donnees_combinees_filtrees$filiere))
     ),
     mainPanel(
       plotOutput("activePlot")
@@ -60,7 +62,11 @@ server <- function(input, output) {
   
   observeEvent(input$btnFiliereGenre, {
     output$activePlot <- renderPlot({
-      boxplotFiliereGenre(data)
+      if (!is.null(input$filiere)) {
+        filtered_data <- data %>%
+          filter(filiere %in% input$filiere)
+        boxplotFiliereGenre(filtered_data)
+      }
     })
   })
   
@@ -138,9 +144,10 @@ boxplotFiliere <- function(data) {
   
 }
 
+
+
 boxplotFiliereGenre <- function(data) {
-  # le code pour le boxplot de la rémunération annuelle brute par genre par filière ici
-  ggplot(donnees_combinees_filtrees, aes(x = filiere, y = remuneration_annuelle_brute)) +
+  ggplot(data, aes(x = filiere, y = remuneration_annuelle_brute)) +
     geom_boxplot(aes(fill = sexe), position = position_dodge(0.8), outlier.colour = "black", outlier.shape = 1) +
     scale_fill_manual(values = c("Femme" = "#EE6677", "Homme" = "#4477AA", "Ne souhaite pas répondre" = "grey50")) +
     theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
@@ -149,9 +156,9 @@ boxplotFiliereGenre <- function(data) {
          y = "Rémunération Annuelle Brute") +
     theme_minimal() +
     theme(legend.position = "bottom") +  
-    scale_y_continuous(breaks = seq(0, 100000, by = 10000), labels = comma, limits = c(0, 100000))
-  
+    scale_y_continuous(breaks = seq(0, 100000, by = 10000), labels = scales::comma, limits = c(0, 100000))
 }
+
 
 
 

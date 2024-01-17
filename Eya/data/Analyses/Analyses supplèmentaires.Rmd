@@ -1,0 +1,12 @@
+---
+title: "Analyses supplémentaires"
+output: html_document
+date: "2024-01-17"
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+##Taille d'entreprise
+##Secteur d'activité
