@@ -79,7 +79,7 @@ write.csv(attribut_entreprise, file = "./etude_entreprise.csv", row.names = FALS
 ## 1) Anova univarible sur l'attribut nature de contrat en fonction de la variable remuneration: 
 ```{r}
 # Filtrer les données pour inclure uniquement "CDI" et "CDD" avec un salaire entre 20000 et 75000
-nature_contrat_filtered <- subset(attribut_entreprise, 
+nature_contrat_filtered <- subset(merged_data, 
                                    nature_contrat %in% c("CDI (contrat de travail à durée indéterminée) y compris CDIC", "CDD (contrat de travail à durée déterminée)") &
                                    remuneration_prime >= 20000 & remuneration_prime <= 75000)
 
@@ -136,12 +136,7 @@ Dans votre cas, la variable nature_contrat semble avoir une influence significat
 
 ```{r}
 
-variations_a_combiner <- c("A l étranger", "A l'étranger", "A l'Ètranger") 
-
-merged_data$localisation_combined <- merged_data$localisation_emploi
-merged_data$localisation_combined[merged_data$localisation_combined %in% variations_a_combiner] <- "A l'étranger"
-
-anova_localisation_emploi <- aov(remuneration_prime ~ localisation_combined, data = merged_data)
+anova_localisation_emploi <- aov(remuneration_prime ~ localisation_emploi, data = merged_data)
 summary(anova_localisation_emploi)
 ```
 
@@ -218,15 +213,6 @@ print(table_data)
 
 ```
 
-```{r}
-ggplot(anova_region_emploi, aes(x = factor(region_emploi), y = remuneration_prime)) +
-  geom_boxplot() +
-  labs(x = "Région emploi", y = "Rémunération Prime") +
-  ggtitle("Variation de la rémunération Prime par la région de l'emploi") +
-  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
-
-```
-
 ### Résultat : 
 
 Pr(>F) : Valeur p. C'est la probabilité de voir des résultats aussi extrêmes que ceux observés dans les données si l'hypothèse nulle est vraie. Ici, une valeur de <2e-16 (pratiquement 0) indique que la variable region_emploi a une influence significative sur la variable remuneration_prime. En d'autres termes, il y a de fortes chances que la rémunération soit significativement différente entre différentes régions.
@@ -235,7 +221,7 @@ Pr(>F) : Valeur p. C'est la probabilité de voir des résultats aussi extrêmes 
 ## 4) Anova univarible sur la variable de si l'entreprise appartient à un groupe en fonction de la remuneration : 
 
 ```{r}
-data_no_na <- na.omit(attribut_entreprise[, c("remuneration_prime", "entreprise_groupe")])
+data_no_na <- na.omit(merged_data[, c("remuneration_prime", "entreprise_groupe")])
 data_filtered <- data_no_na[data_no_na$entreprise_groupe %in% c("Oui", "Non") & 
                             data_no_na$remuneration_prime >= 20000 & 
                             data_no_na$remuneration_prime <= 60000, ]
@@ -258,7 +244,7 @@ Nous avons une influence significative de l'appartenance de l'entreprise à un g
 
 ```{r}
 # Renommer les niveaux de la variable taille_entreprise
-attribut_entreprise$taille_entreprise <- recode(attribut_entreprise$taille_entreprise,
+merged_data$taille_entreprise <- recode(merged_data$taille_entreprise,
                                                 "Moins de 10 salariÈ(e)s" = "Moins de 10 salarié(e)s",
                                                 "250 ‡ 4 999 salariÈ(e)s" = "250 à 4 999 salarié(e)s",
                                                 "5000 salariÈ(e)s ou plus" = "5 000 salarié(e)s ou plus",
@@ -267,7 +253,7 @@ attribut_entreprise$taille_entreprise <- recode(attribut_entreprise$taille_entre
                                                 "De 50 ‡ 249 salariÈ(e)s" = "De 50 à 249 salarié(e)s")
 
 # Effectuer l'ANOVA sur les données mises à jour
-anova_taille_entreprise <- aov(remuneration_prime ~ taille_entreprise, data = attribut_entreprise)
+anova_taille_entreprise <- aov(remuneration_prime ~ taille_entreprise, data = merged_data)
 
 # Afficher le résumé de l'ANOVA
 summary(anova_taille_entreprise)
@@ -314,7 +300,7 @@ D'après notre anova, nous pouvons noter une influece significative de la taille
 
 ```{r}
 # ANOVA pour évaluer l'impact de la région de l'emploi et de la taille de l'entreprise sur la rémunération prime
-anova_region_taille <- aov(remuneration_prime ~ region_emploi * taille_entreprise, data = attribut_entreprise)
+anova_region_taille <- aov(remuneration_prime ~ region_emploi * taille_entreprise, data = merged_data)
 
 # Affichage des résultats
 summary(anova_region_taille)
@@ -330,7 +316,7 @@ l'interaction entre region_emploi et taille_entreprise met en évidence une inte
 
 ```{r}
 # ANOVA pour évaluer l'impact de la région de l'emploi et de la taille de l'entreprise sur la rémunération prime
-anova_region_sexe <- aov(remuneration_prime ~ region_emploi * sexe, data = attribut_entreprise)
+anova_region_sexe <- aov(remuneration_prime ~ region_emploi * sexe, data = merged_data)
 
 # Affichage des résultats
 summary(anova_region_sexe)
@@ -341,11 +327,11 @@ summary(anova_region_sexe)
 library(ggplot2)
 
 #stockage des différentes région : 
-valeurs_regions <- unique(attribut_entreprise$region_emploi)
+valeurs_regions <- unique(merged_data$region_emploi)
 
 options(repr.plot.width = 10, repr.plot.height = 6)
 # Créer un graphique d'interaction en boîte avec facettes
-interaction_plot <- ggplot(attribut_entreprise, aes(x = sexe, y = remuneration_prime/10000, fill = sexe)) +
+interaction_plot <- ggplot(merged_data, aes(x = sexe, y = remuneration_prime/10000, fill = sexe)) +
   geom_boxplot() +
   facet_wrap(~region_emploi, scales = "free_y") +
   labs(title = "Interaction entre region_emploi et sexe",
@@ -361,17 +347,17 @@ print(interaction_plot)
 
 ```{r}
 # ANOVA pour évaluer l'impact de la région de l'emploi et de la taille de l'entreprise sur la rémunération prime
-anova_region_filiere <- aov(remuneration_prime~ region_emploi * filiere, data = attribut_entreprise)
+anova_region_filiere <- aov(remuneration_prime~ region_emploi * filiere, data = merged_data)
 
 # Affichage des résultats
 summary(anova_region_filiere)
 ```
 ```{r}
 #stockage des différentes région : 
-valeurs_regions <- unique(attribut_entreprise$filiere)
+valeurs_regions <- unique(merged_data$filiere)
 
 # Créer un graphique d'interaction en boîte avec facettes
-interaction_plot <- ggplot(attribut_entreprise, aes(x = filiere, y = remuneration_prime/10000, fill = filiere)) +
+interaction_plot <- ggplot(merged_data, aes(x = filiere, y = remuneration_prime/10000, fill = filiere)) +
   geom_boxplot() +
   facet_wrap(~region_emploi, scales = "free_y") + 
   labs(title = "Interaction entre region_emploi et sexe",
