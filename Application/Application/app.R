@@ -17,17 +17,17 @@ data <- read.csv("merged_database.csv", header = TRUE)
 data_axe1 <- read.csv('donnees_combinees_filtrees.csv', header = TRUE)
 
 
-data$filiere_combined2[data$filiere %in% c("Eau et Génie Civil (EGC - apprentissage)", "Eau et GÈnie Civil (EGC − apprentissage)")] <- "Eau et Génie Civil (EGC − apprentissage)"
-data$filiere_combined2[data$filiere %in% c("Génie Biologique et Agroalimentaires (GBA)", "GÈnie Biologique et Agroalimentaires (GBA)")] <- "Génie Biologique et Agroalimentaires (GBA)"
-data$filiere_combined2[data$filiere %in% c("Matériaux (MAT)", "MatÈriaux (MAT)")] <- "Matériaux (MAT)"
-data$filiere_combined2[data$filiere %in% c("Mécanique et Interactions (MI)", "MÈcanique et Interactions (MI)")] <- "Mécanique et Interactions (MI)"
-data$filiere_combined2[data$filiere %in% c("Mécanique Structures Industrielles (MSI − apprentissage)", "MÈcanique Structures Industrielles (MSI − apprentissage)")] <- "Mécanique Structures Industrielles (MSI − apprentissage)"
-data$filiere_combined2[data$filiere %in% c("Microélectronique Et Automatique (MEA)", "MicroÈlectronique Et Automatique (MEA)")] <- "Microélectronique Et Automatique (MEA)"
-data$filiere_combined2[data$filiere %in% c("Sciences et Technologies de l Eau (STE)", "Sciences et Technologies de l'Eau (STE)")] <- "Sciences et Technologies de l'Eau (STE)"
-data$filiere_combined2[data$filiere %in% c ("Energétique - énergies Renouvelables (EnR)")] <- "Energétique - énergies Renouvelables (EnR)"
-data$filiere_combined2[data$filiere %in% c ("Informatique et Gestion (IG)")] <- "Informatique et Gestion (IG)"
-data$filiere_combined2[data$filiere %in% c("Systèmes Embarqués (SE - apprentissage)", "Systèmes EmbarquÈs (SE - apprentissage)")] <- "Systèmes Embarqués (SE - apprentissage)"
-data$filiere_combined2[data$filiere %in% c("Mécanique Structures Industrielles (MSI - apprentissage)", "MÈcanique Structures Industrielles (MSI - apprentissage)")] <- "Mécanique Structures Industrielles (MSI - apprentissage)"
+data$filiere_combined2[data$filiere %in% c("Eau et Génie Civil (EGC - apprentissage)", "Eau et GÈnie Civil (EGC − apprentissage)")] <- "EGC"
+data$filiere_combined2[data$filiere %in% c("Génie Biologique et Agroalimentaires (GBA)", "GÈnie Biologique et Agroalimentaires (GBA)")] <- "GBA"
+data$filiere_combined2[data$filiere %in% c("Matériaux (MAT)", "MatÈriaux (MAT)")] <- "MAT"
+data$filiere_combined2[data$filiere %in% c("Mécanique et Interactions (MI)", "MÈcanique et Interactions (MI)")] <- "MI"
+data$filiere_combined2[data$filiere %in% c("Mécanique Structures Industrielles (MSI − apprentissage)", "MÈcanique Structures Industrielles (MSI − apprentissage)")] <- "MSI"
+data$filiere_combined2[data$filiere %in% c("Microélectronique Et Automatique (MEA)", "MicroÈlectronique Et Automatique (MEA)")] <- "MEA"
+data$filiere_combined2[data$filiere %in% c("Sciences et Technologies de l Eau (STE)", "Sciences et Technologies de l'Eau (STE)")] <- "STE"
+data$filiere_combined2[data$filiere %in% c ("Energétique - énergies Renouvelables (EnR)")] <- "EnR"
+data$filiere_combined2[data$filiere %in% c ("Informatique et Gestion (IG)")] <- "IG"
+data$filiere_combined2[data$filiere %in% c("Systèmes Embarqués (SE - apprentissage)", "Systèmes EmbarquÈs (SE - apprentissage)")] <- "SE"
+data$filiere_combined2[data$filiere %in% c("Mécanique Structures Industrielles (MSI - apprentissage)", "MÈcanique Structures Industrielles (MSI - apprentissage)")] <- "MSI"
 
 data$type_combined <- ifelse(data$type_formation %in% c("Sous contrat d apprentissage", "Sous contrat d'apprentissage"),
                              "Sous contrat d'apprentissage", data$type_formation)
@@ -36,6 +36,7 @@ filtered_data <- data[!is.na(data$remuneration_prime) & data$type_combined != ""
 
 
 filtered_data2 <- data[!is.na(data$remuneration_prime) & data$filiere_combined2 != ""& data$filiere_combined2 != "NA",]
+
 
 moyennes_par_groupe <- data %>%
   group_by(filiere_combined2, type_combined, date_diplome) %>%
@@ -107,11 +108,13 @@ ui <- fluidPage(
              h4("Diagrammes de boîte (box plots) et diagrammes de dispersion"),
              sidebarLayout(
                sidebarPanel(
-                 checkboxGroupInput("filieres", "Sélectionner des filières", choices = unique(data$filiere_combined2), selected = unique(data$filiere_combined2)),
+                 checkboxGroupInput("filieres", "Sélectionner des filières", choices = c("MEA","SE","EnR","MSI", "IG", "MAT", "MI", "GBA","STE", "EGC"), selected = c("MEA","SE","EnR","MSI", "IG", "MAT", "MI", "GBA","STE", "EGC")),
                  checkboxGroupInput("sexe", "Sélectionner le sexe", choices = c("Homme","Femme"), selected = c("Homme", "Femme"))
                ),
                mainPanel(
-                 plotOutput("boxplot_filiere")
+                 plotOutput("boxplot_filiere"),
+                 plotOutput("boxplot_unique_filiere")
+                 
                )
              )
     ),
@@ -119,11 +122,13 @@ ui <- fluidPage(
              h4("Diagrammes de boîte (box plots) et diagrammes de dispersion"),
              sidebarLayout(
                sidebarPanel(
-                 checkboxGroupInput("typesformation", "Sélectionner des types de formation", choices = unique(data$type_combined), selected = unique(data$type_combined)),
+                 checkboxGroupInput("typesformation", "Sélectionner des types de formation", choices = c("Formation initiale (hors apprentissage)","Sous contrat d'apprentissage","Sous contrat de professionalisation"), selected = c("Formation initiale (hors apprentissage)","Sous contrat d'apprentissage","Sous contrat de professionalisation")),
                  checkboxGroupInput("sexes", "Sélectionner le sexe", choices = c("Homme","Femme"), selected = c("Homme", "Femme"))
                ),
                mainPanel(
-                 plotOutput("boxplot_typeformation")
+                 plotOutput("boxplot_typeformation"),
+                 plotOutput("boxplot_unique_typeformation")
+                 
                )
              )
     ),
@@ -137,13 +142,17 @@ ui <- fluidPage(
                mainPanel(
                  plotOutput("boxplot_datediplome")
                )
+                 
+               ),
+             tabsetPanel(
+               tabPanel("Boxplot par Filière", plotOutput("boxplot_unique_datediplome")),
              )
     ),
     tabPanel("Analyse des Moyennes par Groupe",
              sidebarLayout(
                sidebarPanel(
-                 checkboxGroupInput("filieress", "Sélectionnez une filière", unique(data$filiere_combined2)),
-                 checkboxGroupInput("type_formationss", "Sélectionnez un type de formation", unique(data$type_combined)),
+                 checkboxGroupInput("filieress", "Sélectionnez une filière", choices = c("MEA","SE","EnR","MSI", "IG", "MAT", "MI", "GBA","STE", "EGC")),
+                 checkboxGroupInput("type_formationss", "Sélectionnez un type de formation", choices = c("Formation initiale (hors apprentissage)","Sous contrat d'apprentissage","Sous contrat de professionalisation")),
                  checkboxGroupInput("date_diplomess", "Sélectionnez une date de diplomation", choices = c("2015","2016","2017","2018","2019","2020","2021","2022"))
                ),
                mainPanel(
@@ -243,10 +252,8 @@ server <- function(input, output) {
     print(histogram)
   })
   
-  # Convertir date_diplome en facteur
   data$date_diplome <- as.factor(data$date_diplome)
   
-  # Puis utiliser le code pour le graphique
   output$histogram_datediplome <- renderPlot({
     histogram2 <- ggplot(subset(data, date_diplome != "721"), aes(x = date_diplome, y = remuneration_prime, fill = date_diplome)) +
       geom_col(alpha = 0.7) +
@@ -258,6 +265,36 @@ server <- function(input, output) {
     
     print(histogram2)
   })
+  
+  output$boxplot_unique_filiere <- renderPlot({
+    ggplot(filtered_data2, aes(x = factor(filiere_combined2), y = remuneration_prime)) +
+      geom_boxplot(width = 0.6) +
+      labs(title = "Boxplot par filière",
+           x = "Filière",
+           y = "Rémunération Prime") +
+      theme_minimal()
+  })
+  
+  # Boxplot pour type_combined
+  output$boxplot_unique_typeformation <- renderPlot({
+    ggplot(filtered_data, aes(x = factor(type_combined), y = remuneration_prime)) +
+      geom_boxplot(width = 0.6) +
+      labs(title = "Boxplot par type de formation",
+           x = "Type de Formation",
+           y = "Rémunération Prime") +
+      theme_minimal()
+  })
+  
+  # Boxplot pour date_diplome
+  output$boxplot_unique_datediplome <- renderPlot({
+    ggplot(subset(data, date_diplome != "721"), aes(x = date_diplome, y = remuneration_prime)) +
+      geom_boxplot(width = 0.7) +
+      labs(title = "Boxplot par date d'obtention du diplôme",
+           x = "Date d'obtention du diplôme",
+           y = "Rémunération Prime") +
+      theme_minimal()
+  })
+  
   
   output$diagramme_empile_GF <- renderPlot({
     ggplot(data_axe1, aes(x = filiere, fill = sexe)) +
