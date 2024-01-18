@@ -9,6 +9,9 @@
 
 library(shiny)
 library(ggplot2)
+library(dplyr)
+library(forcats)
+
 
 data <- read.csv("merged_database.csv", header = TRUE)
 
