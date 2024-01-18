@@ -200,13 +200,9 @@ ui <- fluidPage(
                 plotOutput("boxplots_Genre")
              
     ),
-    tabPanel("Rémunération Annuelle Brute par Genre par Filière", 
-             h4("Diagrammes de boîte par Genre et Filière"),
-             checkboxGroupInput("filiere", "Choisir des filières :", 
-                                choices = unique(data_axe1$filiere),
-                                selected = unique(data_axe1$filiere),
-                                inline = TRUE),
-             plotOutput("boxplotFiliereGenre")
+    tabPanel("Rémunération Annuelle Brute par Filière", 
+             h4("Diagrammes de boîtes par Filière"),
+             plotOutput("boxplot_remuneration_filière")
     ),
     tabPanel("Nationalité", 
              h3("Nationalité"),
@@ -409,6 +405,20 @@ server <- function(input, output) {
            y = "Moyenne de Rémunération") +
       scale_fill_brewer(palette = "Set2") +
       theme_minimal()
+  })
+  
+  output$boxplot_remuneration_filière <- renderPlot({
+    ggplot(donnees_combinees_filtrees, aes(x = filiere, y = remuneration_annuelle_brute, fill = filiere)) +
+      geom_boxplot() +
+      scale_fill_manual(values = c("GBA" = "chartreuse3", "IG" = "deeppink1", "MEA" = "plum", "STE" = "deepskyblue3", 
+                                   "MI"="salmon3", "SE-app"="skyblue3", "MSI-app"="lightsteelblue", "MAT"="lightseagreen", "EnR"="wheat1", "EGC-app"="sienna1")) +  # Définir les couleurs manuellement
+      theme(axis.text.x = element_text(angle = 90, hjust = 1)) +  # Incliner les étiquettes de l'axe x si elles sont trop longues
+      labs(title = "Boxplot de la Rémunération Annuelle Brute par Filière",
+           x = "Filière",
+           y = "Rémunération Annuelle Brute") +
+      theme_minimal() +
+      theme(legend.position = "none")
+    
   })
   
   
