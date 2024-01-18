@@ -11,12 +11,14 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ##Import des données 
 ```{r}
-data2018 <- read.csv("/cloud/project/data/2018.csv")
-data2019 <- read.csv("/cloud/project/data/2019.csv")
-data2020 <- read.csv("/cloud/project/data/2020.csv")
-data2021 <- read.csv("/cloud/project/data/2021.csv")
-data2022 <- read.csv("/cloud/project/data/2022.csv")
-data2023 <- read.csv("/cloud/project/data/2023_axe1.csv")
+library(dplyr)
+
+data2018 <- read.csv("../2018.csv")
+data2019 <- read.csv("../2019.csv")
+data2020 <- read.csv("../2020.csv")
+data2021 <- read.csv("../2021.csv")
+data2022 <- read.csv("../2022.csv")
+data2023 <- read.csv("../2023_axe1.csv")
 
 #homogénéisation de colonnes
 data2020<- data2020 %>% rename(sexe = Genre)
@@ -442,6 +444,28 @@ final_plot <- base_plot +
 print(final_plot)
 
 ```
+
+```{r}
+# Supposons que votre dataframe s'appelle 'donnees' et la colonne de salaire 'salaire_annuel_brut'
+# Et que la colonne 'sexe' contient les genres
+
+# Extraction des statistiques pour les femmes
+stats_femmes <- boxplot.stats(donnees_combinees_filtrees$remuneration_annuelle_brute[donnees_combinees_filtrees$sexe == "Femme"])
+
+# Extraction des statistiques pour les hommes
+stats_hommes <- boxplot.stats(donnees_combinees_filtrees$remuneration_annuelle_brute[donnees_combinees_filtrees$sexe == "Homme"])
+
+# Affichage des statistiques pour les femmes
+print(paste("Quartiles pour les femmes:", stats_femmes$stats))
+print(paste("Valeurs aberrantes pour les femmes:", stats_femmes$out))
+
+# Affichage des statistiques pour les hommes
+print(paste("Quartiles pour les hommes:", stats_hommes$stats))
+print(paste("Valeurs aberrantes pour les hommes:", stats_hommes$out))
+
+```
+
+
 #Nombre de personnes qui ont répondus à l'enquête par filière 
 ```{r}
 library(dplyr)
@@ -639,6 +663,37 @@ unique(donnees_combinees_filtrees$nationalite_francaise)
 # Vérifier les niveaux uniques pour toutes les nationalités
 unique(donnees_combinees_filtrees$nationalite)
 ```
+```{r}
+#Normalisation des noms de filières : 
+donnees_combinees_filtrees <- donnees_combinees_filtrees %>%
+  mutate(
+    nationalite = case_when(
+      nationalite == "Burkinabé" ~ "Burkinabé",
+      nationalite == "BURKINABE" ~ "Burkinabé",
+      nationalite == "Péruvienne" ~ "Péruvienne",
+      nationalite == "Péruvienne " ~ "Péruvienne",
+      nationalite == "Senegalaise" ~ "Senegalaise",
+      nationalite == "Sénégal" ~ "Senegalaise",
+      nationalite == "BrÈsilienne" ~ "Brésilienne",
+      nationalite == "Brésilien" ~ "Brésilienne",
+      nationalite == "Brésilienne" ~ "Brésilienne",
+      nationalite == "AlgÈrienne" ~ "Algérienne",
+      nationalite == "Algérienne" ~ "Algérienne",
+      nationalite == "Malienne "  ~ "Malienne",
+
+
+      # Ajoutez d'autres correspondances ici
+      TRUE ~ nationalite  # Conserve la valeur actuelle si aucune des conditions ci-dessus n'est remplie
+    )
+  )
+
+# Liste des filières uniques
+nationalite_unique <- unique(donnees_combinees_filtrees$nationalite)
+
+# Afficher la liste des filières
+print(nationalite_unique)
+
+```
 #Proportion des personnes qui ont répondus à la question de s'ils ont la nationalité française ou pas : 
 ```{r}
 # Compter le nombre de réponses par catégorie de nationalité française
@@ -657,6 +712,8 @@ ggplot(reponses_nationalite, aes(x = nationalite_francaise, y = n, fill = nation
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ```
+
+
 ```{r}
 # Créer un diagramme en camembert
 ggplot(reponses_nationalite, aes(x = "", y = n, fill = nationalite_francaise)) +
@@ -687,6 +744,7 @@ ggplot(moyenne_salaire_par_nationalite, aes(x = nationalite_francaise, y = moyen
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ```
+
 
 ```{r}
 ggplot(donnees_combinees_filtrees, aes(x = nationalite_francaise, y = remuneration_annuelle_brute, fill = nationalite_francaise)) +
@@ -721,6 +779,8 @@ ggplot(moyenne_salaire_par_nationalite, aes(x = nationalite_francaise, y = moyen
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ```
+
+
 ```{r}
 ggplot(donnees_nettoyees_nationalite, aes(x = nationalite_francaise, y = remuneration_annuelle_brute, fill = nationalite_francaise)) +
   geom_boxplot() +
@@ -746,6 +806,7 @@ theme_minimal() +
 theme(axis.text.x = element_text(angle = 45, hjust = 1))
 ```
 
+
 ```{r}
 # Créer un diagramme en camembert pour donnees_nettoyees
 ggplot(reponses_nationalite_nettoyees, aes(x = "", y = n, fill = nationalite_francaise)) +
@@ -759,9 +820,84 @@ ggplot(reponses_nationalite_nettoyees, aes(x = "", y = n, fill = nationalite_fra
 
 ```
 
+
 ```{r}
 # Exporter vers un fichier CSV
 write.csv(donnees_combinees_filtrees, file = "donnees_combinees_filtrees.csv", row.names = FALSE)
+
+```
+
+```{r}
+# Chargement des librairies nécessaires
+library(ggplot2)
+library(dplyr)
+
+# Préparation des données pour le comptage
+nationalite_counts <- donnees_combinees_filtrees %>%
+  group_by(nationalite) %>%
+  summarise(Nombre = n(), .groups = 'drop') %>%
+  arrange(desc(Nombre))
+
+# Création d'un diagramme en barres
+ggplot(nationalite_counts, aes(x = reorder(nationalite, -Nombre), y = Nombre)) +
+  geom_bar(stat = "identity", fill = "steelblue") +
+  labs(x = "Nationalité", y = "Nombre de personnes", 
+       title = "Nombre de personnes par nationalité") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))  # Incliner les étiquettes pour une meilleure lisibilité
+
+```
+```{r}
+# Chargement des librairies nécessaires
+library(ggplot2)
+
+# Création d'un boxplot des salaires par nationalité
+ggplot(donnees_combinees_filtrees, aes(x = nationalite, y = remuneration_annuelle_brute)) +
+  geom_boxplot(outlier.colour = "red", outlier.shape = 1 ) +
+  labs(x = "Nationalité", y = "Salaire Annuel Brut",
+       title = "Boxplot des Salaires par Nationalité") +
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5))  # Incliner les étiquettes pour une meilleure lisibilité
+
+```
+
+```{r}
+# Regroupement des nationalités moins fréquentes sous une catégorie "Autre"
+#seuil <- 10  # Définir le seuil selon votre jeu de données
+#nationalite_counts <- donnees_combinees_filtrees %>%
+ # group_by(nationalite) %>%
+#  summarise(Count = n(), .groups = 'drop')
+
+# Créer une nouvelle colonne pour le regroupement
+#donnees_combinees_filtrees <- donnees_combinees_filtrees %>%
+ # mutate(nationalite_grouped = ifelse(nationalite %in% nationalite_counts$nationalite[nationalite_counts$Count < seuil], "Autre", nationalite))
+
+# Convertir la nouvelle colonne en facteur
+#donnees_combinees_filtrees$nationalite_grouped <- factor(donnees_combinees_filtrees$nationalite_grouped)
+
+# Création d'un boxplot avec les nationalités regroupées
+#ggplot(donnees_combinees_filtrees, aes(x = nationalite_grouped, y = remuneration_annuelle_brute)) +
+ # geom_boxplot() +
+  #labs(x = "Nationalité", y = "Salaire Annuel Brut",
+   #    title = "Boxplot des Salaires par Nationalité avec Regroupement") +
+  #theme_minimal() +
+  #theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+
+```
+
+
+```{r}
+# Pour chaque filière, calculer les quartiles et la médiane
+quartiles_medianes <- donnees_combinees_filtrees %>%
+  group_by(filiere) %>%
+  summarise(
+    Q1 = quantile(remuneration_annuelle_brute, 0.25, na.rm = TRUE),
+    Mediane = median(remuneration_annuelle_brute, na.rm = TRUE),
+    Q3 = quantile(remuneration_annuelle_brute, 0.75, na.rm = TRUE)
+  )
+
+# Afficher les résultats
+print(quartiles_medianes)
 
 ```
 
