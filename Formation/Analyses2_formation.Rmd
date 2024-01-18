@@ -1,0 +1,314 @@
+---
+title: "Analyses_formation"
+author: "Ines Amzert"
+date: "2024-01-14"
+output: html_document
+---
+
+**Analyse de la variance (ANOVA) par sous-groupes**
+
+
+```{r}
+data <- read.csv("merged_database.csv", header = TRUE)
+
+anova_filiere <- aov(remuneration_prime ~ filiere, data = data)
+summary(anova_filiere)
+
+anova_typeformation <- aov(remuneration_prime ~ type_formation, data = data)
+summary(anova_typeformation)
+
+data$date_diplome <- factor(data$date_diplome)
+anova_datediplome <- aov(remuneration_prime ~ date_diplome, data = data)
+summary(anova_datediplome)
+```
+
+**Comparaisons multiples**
+
+**Tests post-hoc**
+
+```{r}
+tukey_filiere <- TukeyHSD(anova_filiere)
+print(tukey_filiere)
+```
+
+**Comparaisons pour "remuneration_prime" entre les niveaux de "filiere" :**
+
+*Analyse détaillée des comparaisons:*
+
+Différences significatives avec EGC (apprentissage) :
+EGC vs. GBA : Différence significative (p = 0.0075812)
+EGC vs. MAT : Différence significative (p = 3.46e-05)
+EGC vs. PHY : Différence significative (p = 3.69e-05)
+EGC vs. ING : Différence significative (p = 2.18e-11)
+
+Différences significatives avec EnR :
+EnR vs. GBA : Différence significative (p = 0.0045899)
+EnR vs. IG : Différence significative (p = 0.0159837)
+EnR vs. MAT : Différence significative (p = 0.0005481)
+EnR vs. PHY : Différence significative (p = 0.0005436)
+EnR vs. ING : Différence significative (p = 4.89e-12)
+
+Différences significatives avec GBA :
+GBA vs. MAT : Aucune différence significative (p = 0.8210247)
+GBA vs. PHY : Aucune différence significative (p = 0.8411878)
+GBA vs. ING : Aucune différence significative (p = 0.6328812)
+
+Différences significatives avec IG :
+IG vs. MAT : Aucune différence significative (p = 0.9910328)
+IG vs. PHY : Aucune différence significative (p = 0.9999899)
+IG vs. ING : Aucune différence significative (p = 0.4709837)
+
+Différences significatives avec MAT :
+MAT vs. PHY : Aucune différence significative (p = 0.9999337)
+MAT vs. ING : Différence significative (p = 1.54e-07)
+
+Différences significatives avec PHY :
+PHY vs. ING : Aucune différence significative (p = 0.9381671)
+
+**Groupes avec des différences significatives :**
+EGC (apprentissage) montre des différences significatives avec GBA, MAT, PHY, et ING.
+EnR montre des différences significatives avec GBA, IG, MAT, PHY, et ING.
+GBA ne montre de différences significatives qu'avec MAT.
+IG ne montre de différences significatives avec aucun autre groupe.
+MAT montre des différences significatives avec ING.
+PHY ne montre de différences significatives avec aucun autre groupe.
+ING ne montre de différences significatives avec aucun autre groupe.
+
+
+Certains groupes de filières montrent des différences significatives, tandis que d'autres ne le font pas.
+1376 observations ont été exclues en raison de données manquantes.
+
+```{r}
+library(ggplot2)
+histogram4 <- ggplot(data, aes(x = filiere, y = remuneration_prime, fill = filiere)) +
+  geom_bar(stat = "identity", position = "dodge", alpha = 0.7) +
+  labs(title = "Répartition des salaires par filière",
+       x = "Filière",
+       y = "Rémunération Prime") +
+  scale_fill_brewer(palette = "Set2") +
+  theme_minimal() 
+print(histogram4)
+```
+
+
+```{r}
+library(ggplot2)
+
+data$filiere_combined2[data$filiere %in% c("Eau et Génie Civil (EGC - apprentissage)", "Eau et GÈnie Civil (EGC − apprentissage)")] <- "EGC"
+data$filiere_combined2[data$filiere %in% c("Génie Biologique et Agroalimentaires (GBA)", "GÈnie Biologique et Agroalimentaires (GBA)")] <- "GBA"
+data$filiere_combined2[data$filiere %in% c("Matériaux (MAT)", "MatÈriaux (MAT)")] <- "MAT"
+data$filiere_combined2[data$filiere %in% c("Mécanique et Interactions (MI)", "MÈcanique et Interactions (MI)")] <- "MI"
+data$filiere_combined2[data$filiere %in% c("Mécanique Structures Industrielles (MSI − apprentissage)", "MÈcanique Structures Industrielles (MSI − apprentissage)")] <- "MSI"
+data$filiere_combined2[data$filiere %in% c("Microélectronique Et Automatique (MEA)", "MicroÈlectronique Et Automatique (MEA)")] <- "MEA"
+data$filiere_combined2[data$filiere %in% c("Sciences et Technologies de l Eau (STE)", "Sciences et Technologies de l'Eau (STE)")] <- "STE"
+data$filiere_combined2[data$filiere %in% c ("Energétique - énergies Renouvelables (EnR)")] <- "EnR"
+data$filiere_combined2[data$filiere %in% c ("Informatique et Gestion (IG)")] <- "IG"
+data$filiere_combined2[data$filiere %in% c("Systèmes Embarqués (SE - apprentissage)", "Systèmes EmbarquÈs (SE - apprentissage)")] <- "SE"
+data$filiere_combined2[data$filiere %in% c("Mécanique Structures Industrielles (MSI - apprentissage)", "MÈcanique Structures Industrielles (MSI - apprentissage)")] <- "MSI"
+
+filtered_data2 <- data[!is.na(data$remuneration_prime) & data$filiere_combined2 != "",]
+
+histogram3 <- ggplot(filtered_data2, aes(x = filiere_combined2, y = remuneration_prime, fill = filiere_combined2)) +
+  geom_bar(stat = "identity", position = "dodge", alpha = 0.7) +
+  labs(title = "Répartition des salaires par filière",
+       x = "Filière",
+       y = "Rémunération Prime") +
+  scale_fill_brewer(palette = "Paired") +
+  theme_minimal() 
+print(histogram3)
+
+```
+
+
+```{r}
+tukey_typeformation <- TukeyHSD(anova_typeformation)
+print(tukey_typeformation)
+```
+
+L'analyse des comparaisons multiples (tests post-hoc) après l'ANOVA pour la variable "type_formation" montre des différences significatives entre certaines modalités. 
+**Comparaisons pour "remuneration_prime" entre les niveaux de "type_formation" :**
+
+*Formation initiale (hors apprentissage) vs. Sous contrat d'apprentissage :*
+
+La différence moyenne estimée est de 1599.59, avec un intervalle de confiance à 95% [-20690.38, 3210.32]. La p-value ajustée est de 0.268, ce qui n'est pas significatif.
+Les résultats suggèrent que la "Formation initiale (hors apprentissage)" et le "Sous contrat d'apprentissage" n'ont pas de différence significative en termes de "remuneration_prime".
+
+
+*Formation initiale (hors apprentissage) vs. Sous contrat de professionalisation :*
+
+La différence moyenne estimée est de 509.18, avec un intervalle de confiance à 95% [-942.76, 1961.13]. La p-value ajustée est **significative** (p = 0.00015).
+Il y a des différences significatives dans la "remuneration_prime" entre les individus ayant suivi une "Formation initiale (hors apprentissage)" et ceux sous contrat de professionalisation.
+
+
+*Sous contrat d'apprentissage vs. Sous contrat de professionalisation :*
+
+La différence moyenne estimée est de -4160.04, avec un intervalle de confiance à 95% [-4672.30, -1061.39]. La p-value ajustée est **significative** (p = 0.00000).
+Il y a également des différences significatives entre les individus sous contrat d'apprentissage et ceux sous contrat de professionalisation.
+
+*Conclusion :*
+
+**Le "Sous contrat de professionalisation" montre des différences significatives par rapport à d'autres modalités.**
+
+```{r}
+library(ggplot2)
+
+data$type_combined <- ifelse(data$type_formation %in% c("Sous contrat d apprentissage", "Sous contrat d'apprentissage"),
+                             "Sous contrat d'apprentissage", data$type_formation)
+
+filtered_data <- data[!is.na(data$remuneration_prime) & data$type_combined != "" & data$remuneration_prime != "", ]
+
+histogram <- ggplot(filtered_data, aes(x = type_combined, y = remuneration_prime, fill = type_combined)) +
+  geom_bar(stat = "identity", position = "dodge", alpha = 0.7) +
+  labs(title = "Répartition des salaires par type de formation",
+       x = "Type de Formation",
+       y = "Rémunération Prime") +
+  scale_fill_brewer(palette = "Set2") +
+  theme_minimal() 
+print(histogram)
+```
+
+
+```{r}
+tukey_datediplome <- TukeyHSD(anova_datediplome)
+print(tukey_datediplome)
+```
+
+L'analyse de Tukey pour la variable "date_diplome" révèle des différences significatives entre certaines années. Voici une interprétation détaillée des résultats :
+**Comparaisons pour "remuneration_prime" entre les niveaux de "date_diplome" :**
+
+*Différences significatives :*
+
+Les p-values ajustées (p adj) indiquent si la différence moyenne entre les années est significative.
+Les différences sont considérées significatives si la p-value ajustée est inférieure à 0.05.
+
+
+*Interprétation des résultats :*
+
+Par exemple, pour la comparaison "2020-2017", la différence moyenne est de 2429.03, avec un intervalle de confiance à 95 % de [-713.58, 496.72]. La p-value ajustée est de 0.0036, ce qui est **significatif**. Cela suggère que la "remuneration_prime" diffère de manière significative entre les années 2020 et 2017.
+
+La comparaison "2022-2021" montre une différence moyenne de 1210.29, avec un intervalle de confiance à 95 % de [-466.03, 315.66]. La p-value ajustée est de 0.8873, ce qui **n'est pas significatif**.
+Conclusion :
+
+Les années avec des p-values ajustées inférieures à 0.05 indiquent des différences significatives dans les niveaux de "remuneration_prime" entre ces années.
+En se basant sur les p-values ajustées de l'analyse Tukey pour la variable "date_diplome", voici les paires d'années entre lesquelles des différences significatives ont été observées en termes de "remuneration_prime" (avec un seuil de significativité de 0.05) :
+
+1. 2016-2015
+2. 2017-2015
+3. 2020-2015
+4. 2021-2015
+5. 2018-2017
+6. 2019-2017
+7. 2020-2017
+8. 2021-2017
+9. 2019-2018
+10. 2020-2018
+11. 2021-2018
+12. 2022-2018
+13. 2020-2019
+14. 2021-2019
+15. 2022-2019
+16. 2021-2020
+17. 2022-2020
+18. 2022-2021
+
+Ces paires d'années présentent des différences significatives dans les niveaux de "remuneration_prime".
+
+
+```{r}
+library(ggplot2)
+histogram2 <- ggplot(subset(data, date_diplome != "721"), aes(x = date_diplome, y = remuneration_prime, fill = date_diplome)) +
+  geom_bar(stat = "identity", position = "dodge", alpha = 0.7) +
+  labs(title = "Répartition des salaires par date d'obtention du diplôme",
+       x = "Date d'obtention du diplôme",
+       y = "Rémunération Prime") +
+  scale_fill_brewer(palette = "Set2") +
+  theme_minimal() 
+
+print(histogram2)
+
+```
+
+
+**Analyse de Régression Multiple : Impact de la Filère, du Type de Formation et de la Date de Diplôme sur la Rémunération Prime**
+
+```{r}
+model <- lm(remuneration_prime ~ filiere + type_formation + date_diplome, data = data)
+summary(model)
+```
+
+*Modèle Global :* Le modèle global est statistiquement significatif (F-statistic = 10.54, p-value < 2.2e-16), indiquant que les variables explicatives ont un effet significatif sur "remuneration_prime".
+*Proportion de Variance Expliquée :* Le R-squared est de 8.9%, ce qui suggère que le modèle explique une petite partie de la variabilité de "remuneration_prime".
+*Erreur Résiduelle :* Le Residual standard error est de 9447, représentant l'erreur résiduelle moyenne du modèle.
+Coefficients :
+
+*Intercept (Constante) :* L'intercept est significatif (p-value < 2e-16).
+*Variables Explicatives :* Les coefficients des variables explicatives (filiere, type_formation, date_diplome) indiquent l'effet attendu sur "remuneration_prime". Les p-values associées indiquent leur significativité.
+*Interprétation des Coefficients :*
+
+Par exemple, pour la variable "filiere", un coefficient positif indique une augmentation prévue de "remuneration_prime" par rapport au niveau de référence.
+Les p-values permettent de déterminer la significativité de chaque variable explicative.
+Résidus et Normalité :
+
+**Diagrammes de boîte (box plots) et diagrammes de dispersion**
+```{r}
+boxplot(remuneration_prime ~ filiere_combined2, data = filtered_data2)
+
+boxplot(remuneration_prime ~ type_combined, data = filtered_data)
+
+# Convertir date_diplome en caractère pour la comparaison
+data$date_diplome <- as.character(data$date_diplome)
+
+# Filtrer les données en excluant les observations où date_diplome est égale à "721"
+filtered_data_boxplot <- data[data$date_diplome != "721", ]
+
+# Créer le boxplot avec les données filtrées
+boxplot(remuneration_prime ~ date_diplome, data = filtered_data_boxplot)
+
+```
+
+
+```{r}
+library(dplyr)
+
+moyennes_par_groupe <- data %>%
+  group_by(filiere, type_formation, date_diplome) %>%
+  summarise(
+    moyenne_remuneration = mean(remuneration_prime, na.rm = TRUE),
+  )
+
+print(moyennes_par_groupe)
+```
+
+```{r}
+ ggplot(filtered_data2, aes(x = factor(filiere_combined2), y = remuneration_prime, fill = factor(sexe))) +
+      geom_boxplot(width = 0.6) + 
+      labs(x = "Filière", y = "Rémunération Prime") +
+      ggtitle(paste("Variation de la rémunération Prime par filière et sexe")) +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 50, hjust = 1))
+```
+
+```{r}
+data$type_combined2[data$type_formation %in% c("Sous contrat d apprentissage", "Sous contrat d'apprentissage")] <- "Sous contrat d'apprentissage"
+
+
+ggplot(filtered_data, aes(x = factor(type_combined), y = remuneration_prime, fill = factor(sexe))) +
+      geom_boxplot(width = 0.6) +  
+      labs(x = "Type de Formation", y = "Rémunération Prime") +
+      ggtitle(paste("Variation de la rémunération Prime par type de formation et sexe")) +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 50, hjust = 1))
+```
+
+
+```{r}
+ ggplot(subset(data, date_diplome != "721"), aes(x = factor(date_diplome), y = remuneration_prime, fill = factor(sexe))) +
+      geom_boxplot(width = 0.6) +  
+      labs(x = "Date d'obtention du diplôme", y = "Rémunération Prime") +
+      ggtitle("Variation de la rémunération Prime par date d'obtention du diplôme") +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 60, hjust = 1))
+```
+
+
+

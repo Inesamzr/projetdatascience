@@ -1,0 +1,432 @@
+---
+title: "Etude Entreprise"
+author: "Amel"
+date: "2024-01-03"
+output: html_document
+---
+
+# Merge l'ensemble des données : 
+
+1- Il faut transformer les colonnes pour quelles aient toutes le même type de données : 
+
+```{r}
+library(purrr)
+library(dplyr)
+
+chemins <- c("Nettoyage_2018/enquete_2018DS-2_nettoyer.csv", 
+             "Nettoyage_2019/2019.csv", 
+             "Nettoyage_2020/enquete_2020DS_nettoyer.csv", 
+             "Nettoyage_2021/enquete_2021DS-2_nettoyer.csv", 
+             "Nettoyage_2022/enquete_2022DS-2_nettoyer.csv", 
+             "Nettoyage2023/enquete_2023DS-2_NR2.csv")
+
+# Lire les fichiers
+
+# Convertir la colonne 'identifiant' en double si elle est de type caractère
+dataframes <- map(dataframes, ~ {
+    if ('identifiant' %in% names(.x) && is.character(.x$identifiant)) {
+        .x <- mutate(.x, identifiant = as.double(identifiant))
+    }
+    if ('duree_CDD' %in% names(.x) && is.double(.x$duree_CDD)) {
+        .x <- mutate(.x, duree_CDD = as.character(duree_CDD))
+    }
+    if ('emploi_lie_energie_renouvelable' %in% names(.x) && is.double(.x$emploi_lie_energie_renouvelable)) {
+        .x <- mutate(.x, emploi_lie_energie_renouvelable = as.character(emploi_lie_energie_renouvelable))
+    }
+    if ('jours_télétravail' %in% names(.x) && is.double(.x$jours_télétravail)) {
+        .x <- mutate(.x, jours_télétravail = as.character(jours_télétravail))
+    }
+    return(.x)
+})
+
+merged_data <- bind_rows(dataframes, .id = "SourceFile")
+
+```
+
+2) ensuite je stock ça dans un fichier csv : 
+
+```{r}
+  write.csv(merged_data, file = "./merged_database.csv", row.names = FALSE)
+```
+
+
+# Sélection des éléments dont j'ai besoin pour mon étude 
+Je fais l'étude du salaire en fonction des différents factueurs de l'entreprise, ainsi pour ça j'ai sélectionné les colonnes qui me paraissaient pertinante pour cette étude : 
+
+```{r}
+library(dplyr)
+
+# Lire le fichier CSV
+data <- read.csv("../merged_database.csv", header = TRUE)
+
+# Sélectionner les colonnes spécifiques
+attribut_entreprise <- data %>%
+  select(identifiant, nature_contrat, localisation_emploi, region_emploi, entreprise_groupe, groupe,
+         intitule_emploi, remuneration_annuelle_brute, prime, remuneration_prime,
+         taille_entreprise_premier_emploi, secteur_premiere_entreprise, status_cadre_premier_emploi,
+         nom_entreprise_premier_emploi, taille_entreprise, sexe, filiere)
+
+# Afficher les premières lignes pour vérifier les données sélectionnées
+head(attribut_entreprise)
+
+
+write.csv(attribut_entreprise, file = "./etude_entreprise.csv", row.names = FALSE)
+
+```
+
+# Les études sur mes données :
+
+## 1) Anova univarible sur l'attribut nature de contrat en fonction de la variable remuneration: 
+```{r}
+# Filtrer les données pour inclure uniquement "CDI" et "CDD" avec un salaire entre 20000 et 75000
+nature_contrat_filtered <- subset(merged_data, 
+                                   nature_contrat %in% c("CDI (contrat de travail à durée indéterminée) y compris CDIC", "CDD (contrat de travail à durée déterminée)") &
+                                   remuneration_prime >= 20000 & remuneration_prime <= 75000)
+
+# Convertir nature_contrat en facteur si ce n'est pas déjà le cas
+nature_contrat_filtered$nature_contrat <- factor(nature_contrat_filtered$nature_contrat)
+
+# Effectuer l'ANOVA sur les données filtrées
+nature_contrat_anova <- aov(remuneration_prime ~ nature_contrat, data = nature_contrat_filtered)
+
+# Afficher le résumé de l'ANOVA
+summary(nature_contrat_anova)
+
+
+```
+1.1 représentation graphique : 
+```{r}
+# Définir les couleurs
+custom_colors <- c("#A9BCD0", "#8491C8", "#58A4B0", "#FFFFFF", "#ED6677")
+freq_contrats <- table(nature_contrat_anova$nature_contrat)
+
+# Trier les fréquences par ordre décroissant
+sorted_freq <- sort(freq_contrats, decreasing = TRUE)
+
+# Afficher les types de contrats les plus fréquents
+head(sorted_freq, 10)
+
+# Définir les couleurs
+custom_colors <- c("#A9BCD0", "#8491C8", "#58A4B0", "#FFFFFF", "#ED6677")
+
+# Utiliser les couleurs personnalisées dans le graphique
+ggplot(nature_contrat_anova, aes(x = factor(nature_contrat), y = remuneration_prime)) +
+  geom_boxplot(fill = custom_colors[1]) +  # Utiliser la première couleur pour remplir les boîtes
+  labs(x = "Nature du contrat", y = "Rémunération Prime") +
+  ggtitle("Variation de la rémunération Prime par nature de contrat") +
+  theme_minimal()
+
+```
+
+### Résultat : 
+
+Ce résultat provient d'une analyse de variance (ANOVA) qui a été effectuée sur la variable remuneration_prime en fonction de la variable nature_contrat. Voici ce que signifient les différentes parties de la sortie :
+
+Df: Degré de liberté, indique le nombre de catégories moins un.
+Sum Sq: Somme des carrés, représente la variation totale expliquée par le modèle.
+Mean Sq: Moyenne des carrés, correspond à la variation moyenne entre les groupes.
+F value: Valeur de test de Fisher, permet de tester si la moyenne des groupes est significativement différente.
+Pr(>F): Valeur p associée à la statistique F, indique la probabilité que les résultats observés soient dus au hasard.
+
+Dans votre cas, la variable nature_contrat semble avoir une influence significative sur la variable remuneration_prime, car la valeur p (<2e-16) est très petite, ce qui suggère que les moyennes des groupes sont différentes.
+
+## 2) Anova univarible sur l'attribut localisation de l'emploi en fonction de la remuneration: 
+
+> la localisation c'est pour savoir si l'entreprise est en France ou à l'étranger
+
+```{r}
+
+anova_localisation_emploi <- aov(remuneration_prime ~ localisation_emploi, data = merged_data)
+summary(anova_localisation_emploi)
+```
+
+```{r}
+library(ggplot2)
+
+
+ggplot(anova_localisation_emploi, aes(x = localisation_combined, y = remuneration_prime)) +
+  geom_boxplot() +
+  labs(x = "Localisation emploi", y = "Rémunération Prime") +
+  ggtitle("Variation de la rémunération Prime par la localisation de l'emploi")
+```
+
+
+### Résultats : 
+Pr(>F) : C'est la valeur p associée à la valeur F calculée. Elle indique la probabilité d'obtenir un résultat aussi extrême que celui observé, si l'hypothèse nulle (absence de différence significative entre les groupes) était vraie. Une valeur p inférieure à 0.05 (dans ce cas, <2e-16) est généralement considérée comme statistiquement significative. Ici, la valeur p est très proche de zéro, indiquant une très forte signification statistique.
+
+
+
+## 3) Anova univarible sur la variable région de l'emploi en fonction de la remuneration :
+
+```{r}
+merged_data <- na.omit(attribut_entreprise[, c("remuneration_prime", "region_emploi")])
+
+variations_a_combiner_reunion <- c("Réunion", "RÈunion", "La Réunion")
+variations_a_combiner_provence <- c("Provence-Alpes-CÙte d'Azur", "Provence-Alpes-Côte d Azur")
+variations_a_combiner_collectivite <- c("CollectivitÈs d'Outre-Mer (COM)")
+variations_a_combiner_rhone <- c("Auvergne-RhÙne-Alpes")
+variations_a_combiner_bourg <- c("Bourgogne-Franche-ComtÈ")
+
+# Mettre à jour la nouvelle variable pour regrouper les variations
+merged_data$region_combined <-merged_data$region_emploi
+merged_data$region_combined[merged_data$region_combined %in% variations_a_combiner_reunion] <- "La Réunion"
+merged_data$region_combined[merged_data$region_combined %in% variations_a_combiner_provence] <- "Provence-Alpes-Côte d'Azur"
+merged_data$region_combined[merged_data$region_combined %in% variations_a_combiner_collectivite] <- "Collectivités d'Outre-Mer (COM)"
+merged_data$region_combined[merged_data$region_combined %in% variations_a_combiner_rhone] <- "Auvergne-Rhône-Alpes"
+merged_data$region_combined[merged_data$region_combined %in% variations_a_combiner_bourg] <- "Bourgogne-Franche-Comté"
+
+anova_region_emploi <- aov(remuneration_prime ~ region_combined, data = merged_data)
+summary(anova_region_emploi)
+
+ggplot(merged_data, aes(x = factor(region_combined), y = remuneration_prime)) +
+  geom_boxplot() +
+  labs(x = "Région emploi", y = "Rémunération Prime") +
+  ggtitle("Variation de la rémunération Prime par la région de l'emploi") +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust=1))
+
+
+```
+```{r}
+# Filtrer les données pour exclure les NA
+filtered_data <- merged_data[!is.na(merged_data$remuneration_prime), ]
+
+# Créer le graphique en barres avec la moyenne et des couleurs différentes
+ggplot(filtered_data, aes(x = factor(region_combined), y = remuneration_prime, fill = factor(region_combined))) +
+  stat_summary(fun=mean, geom="bar", position="dodge", width=0.7, color="black", size=0.7) +  # Ajouter la barre de moyenne
+  labs(x = "Région emploi", y = "Rémunération Prime") +
+  ggtitle("Moyenne de la rémunération Prime par région de l'emploi (sans NA)") +
+  scale_fill_discrete() +  # Utiliser des couleurs différentes
+  theme_minimal() +
+  theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+
+```
+
+```{r}
+# Calculer les moyennes par région
+mean_salaries_by_region <- tapply(merged_data$remuneration_prime, merged_data$region_combined, mean, na.rm = TRUE)
+
+# Créer un data.frame avec les résultats
+table_data <- data.frame(Region = names(mean_salaries_by_region), Moyenne_Salaire = mean_salaries_by_region)
+
+# Afficher le tableau
+print(table_data)
+
+```
+
+### Résultat : 
+
+Pr(>F) : Valeur p. C'est la probabilité de voir des résultats aussi extrêmes que ceux observés dans les données si l'hypothèse nulle est vraie. Ici, une valeur de <2e-16 (pratiquement 0) indique que la variable region_emploi a une influence significative sur la variable remuneration_prime. En d'autres termes, il y a de fortes chances que la rémunération soit significativement différente entre différentes régions.
+
+
+## 4) Anova univarible sur la variable de si l'entreprise appartient à un groupe en fonction de la remuneration : 
+
+```{r}
+data_no_na <- na.omit(merged_data[, c("remuneration_prime", "entreprise_groupe")])
+data_filtered <- data_no_na[data_no_na$entreprise_groupe %in% c("Oui", "Non") & 
+                            data_no_na$remuneration_prime >= 20000 & 
+                            data_no_na$remuneration_prime <= 60000, ]
+
+anova_entreprise_groupe <- aov(remuneration_prime ~ entreprise_groupe, data = data_filtered)
+summary(anova_entreprise_groupe)
+
+ggplot(data_filtered, aes(x = entreprise_groupe, y = remuneration_prime)) +
+  geom_boxplot() +
+  labs(x = "Appartenance de l'entreprise à un groupe", y = "Rémunération Prime") +
+  ggtitle("Variation de la rémunération Prime par l'appartenance ou non à un groupe")
+
+```
+
+### Résultat
+Nous avons une influence significative de l'appartenance de l'entreprise à un groupe, on peut voir que ceux appartenant à un groupe sont légèrement mieux payer que les autres 
+
+
+## 5) Anova univarible sur la variable de la taille de l'entreprise en fonction de la remuneration : 
+
+```{r}
+# Renommer les niveaux de la variable taille_entreprise
+merged_data$taille_entreprise <- recode(merged_data$taille_entreprise,
+                                                "Moins de 10 salariÈ(e)s" = "Moins de 10 salarié(e)s",
+                                                "250 ‡ 4 999 salariÈ(e)s" = "250 à 4 999 salarié(e)s",
+                                                "5000 salariÈ(e)s ou plus" = "5 000 salarié(e)s ou plus",
+                                                "De 10 ‡ 19 salariÈ(e)s" = "De 10 à 19 salarié(e)s",
+                                                "De 20 ‡ 49 salariÈ(e)s" = "De 20 à 49 salarié(e)s",
+                                                "De 50 ‡ 249 salariÈ(e)s" = "De 50 à 249 salarié(e)s")
+
+# Effectuer l'ANOVA sur les données mises à jour
+anova_taille_entreprise <- aov(remuneration_prime ~ taille_entreprise, data = merged_data)
+
+# Afficher le résumé de l'ANOVA
+summary(anova_taille_entreprise)
+
+```
+
+```{r}
+# Renommer les colonnes de attribut_entreprise
+unique_levels <- levels(attribut_entreprise$taille_entreprise)
+
+attribut_entreprise$taille_combined <- attribut_entreprise$taille_entreprise
+
+attribut_entreprise$taille_combined[attribut_entreprise$taille_entreprise %in% c(" Moins de 10 salariÈ(e)s ", " Moins de 10 salarié(e)s ")] <- "Moins de 10 salarié(e)s"
+attribut_entreprise$taille_combined[attribut_entreprise$taille_entreprise %in% c("250 ‡  4 999 salariÈ(e)s ", "250 à  4 999 salarié(e)s ")] <- "250 à 4 999 salarié(e)s"
+attribut_entreprise$taille_combined[attribut_entreprise$taille_entreprise %in% c("5 000 salarié(e)s ou plus", "5 000 salarié(e)s ou plus")] <- "5 000 salarié(e)s ou plus"
+attribut_entreprise$taille_combined[attribut_entreprise$taille_entreprise %in% c("De 10 ‡ 19 salariÈ(e)s ", "De 10 à 19 salarié(e)s ")] <- "De 10 à 19 salarié(e)s"
+attribut_entreprise$taille_combined[attribut_entreprise$taille_entreprise %in% c("De 20 ‡ 49 salariÈ(e)s ", "De 20 à 49 salarié(e)s ")] <- "De 20 à 49 salarié(e)s"
+attribut_entreprise$taille_combined[attribut_entreprise$taille_entreprise %in% c("De 50 ‡ 249 salariÈ(e)s ", "De 50 à 249 salarié(e)s ")] <- "De 50 à 249 salarié(e)s"
+
+# Vérifier les niveaux après la mise à jour
+unique_levels <- levels(attribut_entreprise$taille_combined)
+print(unique_levels)
+
+# Effectuez l'ANOVA sur les données mises à jour
+anova_taille_entreprise <- aov(remuneration_prime ~ taille_combined, data = attribut_entreprise)
+
+# Affichez le résumé de l'ANOVA
+summary(anova_taille_entreprise)
+
+# Utilisez ggplot avec les résultats de l'ANOVA et suppression des NA
+ggplot(na.omit(attribut_entreprise), aes(x = factor(taille_combined), y = remuneration_prime)) +
+  geom_boxplot() +
+  labs(x = "Taille de l'entreprise", y = "Rémunération Prime") +
+  ggtitle("Variation de la rémunération Prime par la taille de l'entreprise") +
+  theme(axis.text.x = element_text(angle = 90, hjust = 0.5, vjust = 1))
+
+```
+### Résultat 
+D'après notre anova, nous pouvons noter une influece significative de la taille de l'entreprise sur la rémunération de ses employés, en effet les grandes entreprises ont tendance à mieux rémunérer leurs salariés
+
+
+
+## 5) Anova 2 variables sur la variable de la taille de l'entreprise et la région de l'entreprise en fonction de la remuneration : 
+
+```{r}
+# ANOVA pour évaluer l'impact de la région de l'emploi et de la taille de l'entreprise sur la rémunération prime
+anova_region_taille <- aov(remuneration_prime ~ region_emploi * taille_entreprise, data = merged_data)
+
+# Affichage des résultats
+summary(anova_region_taille)
+
+```
+
+### Résultat :
+
+l'interaction entre region_emploi et taille_entreprise met en évidence une interaction significative entre la région de l'emploi et la taille de l'entreprise sur la rémunération prime. Cela signifie que l'influence de la taille de l'entreprise sur la rémunération peut varier en fonction de la région de l'emploi, et vice versa.
+
+
+## 6) Anova 2 variables sur la varable du sexe du salarié et la région de l'entreprise en fonction de la rémunération :
+
+```{r}
+# ANOVA pour évaluer l'impact de la région de l'emploi et de la taille de l'entreprise sur la rémunération prime
+anova_region_sexe <- aov(remuneration_prime ~ region_emploi * sexe, data = merged_data)
+
+# Affichage des résultats
+summary(anova_region_sexe)
+```
+
+```{r}
+# Charger la bibliothèque ggplot2
+library(ggplot2)
+
+#stockage des différentes région : 
+valeurs_regions <- unique(merged_data$region_emploi)
+
+options(repr.plot.width = 10, repr.plot.height = 6)
+# Créer un graphique d'interaction en boîte avec facettes
+interaction_plot <- ggplot(merged_data, aes(x = sexe, y = remuneration_prime/10000, fill = sexe)) +
+  geom_boxplot() +
+  facet_wrap(~region_emploi, scales = "free_y") +
+  labs(title = "Interaction entre region_emploi et sexe",
+       x = "Sexe",
+       y = "Remuneration Prime") +
+  theme_minimal()
+
+# Afficher le graphique
+print(interaction_plot)
+
+```
+## 6) Anova 2 variables sur la varable de la filière du salarié et la région de l'entreprise en fonction de la rémunération :
+
+```{r}
+# ANOVA pour évaluer l'impact de la région de l'emploi et de la taille de l'entreprise sur la rémunération prime
+anova_region_filiere <- aov(remuneration_prime~ region_emploi * filiere, data = merged_data)
+
+# Affichage des résultats
+summary(anova_region_filiere)
+```
+```{r}
+#stockage des différentes région : 
+valeurs_regions <- unique(merged_data$filiere)
+
+# Créer un graphique d'interaction en boîte avec facettes
+interaction_plot <- ggplot(merged_data, aes(x = filiere, y = remuneration_prime/10000, fill = filiere)) +
+  geom_boxplot() +
+  facet_wrap(~region_emploi, scales = "free_y") + 
+  labs(title = "Interaction entre region_emploi et sexe",
+       x = "filiere",
+       y = "Remuneration Prime") +
+  theme_minimal()
+
+# Afficher le graphique
+print(interaction_plot)
+```
+
+
+```{r}
+# Supposons que votre ensemble de données s'appelle "merged_data" et qu'il contient les colonnes "remuneration_prime" et "satisfaction_emploi"
+
+# Charger la bibliothèque pour les statistiques
+library(dplyr)
+
+# Calcul des statistiques descriptives
+stats_descriptives <- merged_data %>%
+  summarise(
+    moyenne_remuneration = mean(remuneration_prime, na.rm = TRUE),
+    mediane_remuneration = median(remuneration_prime, na.rm = TRUE),
+    ecart_type_remuneration = sd(remuneration_prime, na.rm = TRUE),
+    moyenne_satisfaction = mean(satisfaction_emploi, na.rm = TRUE),
+    mediane_satisfaction = median(satisfaction_emploi, na.rm = TRUE),
+    ecart_type_satisfaction = sd(satisfaction_emploi, na.rm = TRUE)
+  )
+
+# Afficher les statistiques descriptives
+print(stats_descriptives)
+
+# Comparaison des moyennes de satisfaction pour différentes tranches de rémunération
+tranches_remuneration <- cut(merged_data$remuneration_prime, breaks = c(-Inf, 25000, 50000, Inf), labels = c("Bas", "Moyen", "Élevé"))
+
+# Créer un tableau croisé des moyennes de satisfaction pour chaque tranche de rémunération
+tableau_croise <- merged_data %>%
+  mutate(tranche_remuneration = tranches_remuneration) %>%
+  group_by(tranche_remuneration) %>%
+  summarise(moyenne_satisfaction = mean(satisfaction_emploi, na.rm = TRUE))
+
+# Afficher le tableau croisé
+print(tableau_croise)
+
+```
+
+
+```{r}
+# Charger la bibliothèque ggplot2
+library(ggplot2)
+
+# Filtrer les données pour exclure les NA
+filtered_data <- merged_data[complete.cases(merged_data[, c("remuneration_prime", "satisfaction_emploi")]), ]
+
+# Calculer la moyenne de la rémunération pour chaque niveau de satisfaction
+mean_salary_by_satisfaction <- filtered_data %>%
+  group_by(satisfaction_emploi) %>%
+  summarise(mean_salary = mean(remuneration_prime))
+
+# Créer un graphique en barres
+graph <- ggplot(mean_salary_by_satisfaction, aes(x = factor(satisfaction_emploi), y = mean_salary)) +
+  geom_bar(stat = "identity", fill = c("#A9BCD0", "#8491C8", "#58A4B0", "#323B60", "#ED6677")) +
+  labs(x = "Niveau de satisfaction", y = "Moyenne de la rémunération") +
+  ggtitle("Moyenne de la rémunération en fonction du niveau de satisfaction") +
+  theme_minimal() +
+  theme(panel.grid = element_blank(), panel.background = element_rect(fill = "transparent"))
+
+# Afficher le graphique
+print(graph)
+
+```
+
