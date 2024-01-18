@@ -523,7 +523,7 @@ server <- function(input, output) {
   })
 
   output$boxplot_remuneration_filière <- renderPlot({
-    ggplot(donnees_combinees_filtrees, aes(x = filiere, y = remuneration_annuelle_brute, fill = filiere)) +
+    ggplot(data_axe1, aes(x = filiere, y = remuneration_annuelle_brute, fill = filiere)) +
       geom_boxplot() +
       scale_fill_manual(values = c("GBA" = "chartreuse3", "IG" = "deeppink1", "MEA" = "plum", "STE" = "deepskyblue3",
                                    "MI"="salmon3", "SE-app"="skyblue3", "MSI-app"="lightsteelblue", "MAT"="lightseagreen", "EnR"="wheat1", "EGC-app"="sienna1")) +  # Définir les couleurs manuellement
