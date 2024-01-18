@@ -28,7 +28,7 @@ summary(anova_datediplome)
 
 ```{r}
 tukey_filiere <- TukeyHSD(anova_filiere)
-summary(tukey_filiere)
+print(tukey_filiere)
 ```
 
 **Comparaisons pour "remuneration_prime" entre les niveaux de "filiere" :**
@@ -80,8 +80,6 @@ Certains groupes de filières montrent des différences significatives, tandis q
 
 ```{r}
 library(ggplot2)
-
-
 histogram4 <- ggplot(data, aes(x = filiere, y = remuneration_prime, fill = filiere)) +
   geom_bar(stat = "identity", position = "dodge", alpha = 0.7) +
   labs(title = "Répartition des salaires par filière",
@@ -96,21 +94,21 @@ print(histogram4)
 ```{r}
 library(ggplot2)
 
-data$filiere_combined2[data$filiere %in% c("Eau et Génie Civil (EGC - apprentissage)", "Eau et GÈnie Civil (EGC − apprentissage)")] <- "Eau et Génie Civil (EGC − apprentissage)"
-data$filiere_combined2[data$filiere %in% c("Génie Biologique et Agroalimentaires (GBA)", "GÈnie Biologique et Agroalimentaires (GBA)")] <- "Génie Biologique et Agroalimentaires (GBA)"
-data$filiere_combined2[data$filiere %in% c("Matériaux (MAT)", "MatÈriaux (MAT)")] <- "Matériaux (MAT)"
-data$filiere_combined2[data$filiere %in% c("Mécanique et Interactions (MI)", "MÈcanique et Interactions (MI)")] <- "Mécanique et Interactions (MI)"
-data$filiere_combined2[data$filiere %in% c("Mécanique Structures Industrielles (MSI − apprentissage)", "MÈcanique Structures Industrielles (MSI − apprentissage)")] <- "Mécanique Structures Industrielles (MSI − apprentissage)"
-data$filiere_combined2[data$filiere %in% c("Microélectronique Et Automatique (MEA)", "MicroÈlectronique Et Automatique (MEA)")] <- "Microélectronique Et Automatique (MEA)"
-data$filiere_combined2[data$filiere %in% c("Sciences et Technologies de l Eau (STE)", "Sciences et Technologies de l'Eau (STE)")] <- "Sciences et Technologies de l'Eau (STE)"
-data$filiere_combined2[data$filiere %in% c ("Energétique - énergies Renouvelables (EnR)")] <- "Energétique - énergies Renouvelables (EnR)"
-data$filiere_combined2[data$filiere %in% c ("Informatique et Gestion (IG)")] <- "Informatique et Gestion (IG)"
-data$filiere_combined2[data$filiere %in% c("Systèmes Embarqués (SE - apprentissage)", "Systèmes EmbarquÈs (SE - apprentissage)")] <- "Systèmes Embarqués (SE - apprentissage)"
-data$filiere_combined2[data$filiere %in% c("Mécanique Structures Industrielles (MSI - apprentissage)", "MÈcanique Structures Industrielles (MSI - apprentissage)")] <- "Mécanique Structures Industrielles (MSI - apprentissage)"
+data$filiere_combined2[data$filiere %in% c("Eau et Génie Civil (EGC - apprentissage)", "Eau et GÈnie Civil (EGC − apprentissage)")] <- "EGC"
+data$filiere_combined2[data$filiere %in% c("Génie Biologique et Agroalimentaires (GBA)", "GÈnie Biologique et Agroalimentaires (GBA)")] <- "GBA"
+data$filiere_combined2[data$filiere %in% c("Matériaux (MAT)", "MatÈriaux (MAT)")] <- "MAT"
+data$filiere_combined2[data$filiere %in% c("Mécanique et Interactions (MI)", "MÈcanique et Interactions (MI)")] <- "MI"
+data$filiere_combined2[data$filiere %in% c("Mécanique Structures Industrielles (MSI − apprentissage)", "MÈcanique Structures Industrielles (MSI − apprentissage)")] <- "MSI"
+data$filiere_combined2[data$filiere %in% c("Microélectronique Et Automatique (MEA)", "MicroÈlectronique Et Automatique (MEA)")] <- "MEA"
+data$filiere_combined2[data$filiere %in% c("Sciences et Technologies de l Eau (STE)", "Sciences et Technologies de l'Eau (STE)")] <- "STE"
+data$filiere_combined2[data$filiere %in% c ("Energétique - énergies Renouvelables (EnR)")] <- "EnR"
+data$filiere_combined2[data$filiere %in% c ("Informatique et Gestion (IG)")] <- "IG"
+data$filiere_combined2[data$filiere %in% c("Systèmes Embarqués (SE - apprentissage)", "Systèmes EmbarquÈs (SE - apprentissage)")] <- "SE"
+data$filiere_combined2[data$filiere %in% c("Mécanique Structures Industrielles (MSI - apprentissage)", "MÈcanique Structures Industrielles (MSI - apprentissage)")] <- "MSI"
 
 filtered_data2 <- data[!is.na(data$remuneration_prime) & data$filiere_combined2 != "",]
 
-histogram3 <- ggplot(data, aes(x = filiere_combined2, y = remuneration_prime, fill = filiere_combined2)) +
+histogram3 <- ggplot(filtered_data2, aes(x = filiere_combined2, y = remuneration_prime, fill = filiere_combined2)) +
   geom_bar(stat = "identity", position = "dodge", alpha = 0.7) +
   labs(title = "Répartition des salaires par filière",
        x = "Filière",
@@ -157,7 +155,7 @@ library(ggplot2)
 data$type_combined <- ifelse(data$type_formation %in% c("Sous contrat d apprentissage", "Sous contrat d'apprentissage"),
                              "Sous contrat d'apprentissage", data$type_formation)
 
-filtered_data <- data[!is.na(data$remuneration_prime) & data$type_combined != "", ]
+filtered_data <- data[!is.na(data$remuneration_prime) & data$type_combined != "" & data$remuneration_prime != "", ]
 
 histogram <- ggplot(filtered_data, aes(x = type_combined, y = remuneration_prime, fill = type_combined)) +
   geom_bar(stat = "identity", position = "dodge", alpha = 0.7) +
@@ -253,11 +251,18 @@ Résidus et Normalité :
 
 **Diagrammes de boîte (box plots) et diagrammes de dispersion**
 ```{r}
-boxplot(remuneration_prime ~ filiere, data = data)
+boxplot(remuneration_prime ~ filiere_combined2, data = filtered_data2)
 
-boxplot(remuneration_prime ~ type_formation, data = data)
+boxplot(remuneration_prime ~ type_combined, data = filtered_data)
 
-boxplot(remuneration_prime ~ date_diplome, data = data)
+# Convertir date_diplome en caractère pour la comparaison
+data$date_diplome <- as.character(data$date_diplome)
+
+# Filtrer les données en excluant les observations où date_diplome est égale à "721"
+filtered_data_boxplot <- data[data$date_diplome != "721", ]
+
+# Créer le boxplot avec les données filtrées
+boxplot(remuneration_prime ~ date_diplome, data = filtered_data_boxplot)
 
 ```
 
@@ -274,9 +279,36 @@ moyennes_par_groupe <- data %>%
 print(moyennes_par_groupe)
 ```
 
+```{r}
+ ggplot(filtered_data2, aes(x = factor(filiere_combined2), y = remuneration_prime, fill = factor(sexe))) +
+      geom_boxplot(width = 0.6) + 
+      labs(x = "Filière", y = "Rémunération Prime") +
+      ggtitle(paste("Variation de la rémunération Prime par filière et sexe")) +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 50, hjust = 1))
+```
+
+```{r}
+data$type_combined2[data$type_formation %in% c("Sous contrat d apprentissage", "Sous contrat d'apprentissage")] <- "Sous contrat d'apprentissage"
 
 
+ggplot(filtered_data, aes(x = factor(type_combined), y = remuneration_prime, fill = factor(sexe))) +
+      geom_boxplot(width = 0.6) +  
+      labs(x = "Type de Formation", y = "Rémunération Prime") +
+      ggtitle(paste("Variation de la rémunération Prime par type de formation et sexe")) +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 50, hjust = 1))
+```
 
+
+```{r}
+ ggplot(subset(data, date_diplome != "721"), aes(x = factor(date_diplome), y = remuneration_prime, fill = factor(sexe))) +
+      geom_boxplot(width = 0.6) +  
+      labs(x = "Date d'obtention du diplôme", y = "Rémunération Prime") +
+      ggtitle("Variation de la rémunération Prime par date d'obtention du diplôme") +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 60, hjust = 1))
+```
 
 
 
