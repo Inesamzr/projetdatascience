@@ -275,7 +275,7 @@ ui <- fluidPage(
                    checkboxGroupInput("regions_t", "Sélectionner des régions", choices = unique(merged_data$region_combined)),
                    # Cases à cocher pour choisir le sexe
                    # Cases à cocher pour choisir la taille de l'entreprise
-                   checkboxGroupInput("taille", "Sélectionner la taille de l'entreprise", choices = unique(attribut_entreprise$taille_combined))
+                   checkboxGroupInput("taille", "Sélectionner la taille de l'entreprise", choices = unique(merged_data$taille_combined))
                  ),
                  mainPanel(
                    # Affichage du boxplot
