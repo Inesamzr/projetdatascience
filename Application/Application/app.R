@@ -14,7 +14,7 @@ library(forcats)
 
 
 data <- read.csv("merged_database.csv", header = TRUE)
-data_axe1 <- read.csv('donnees_combinees_filtrees.csv')
+data_axe1 <- read.csv('donnees_combinees_filtrees.csv', header = TRUE)
 
 
 data$filiere_combined2[data$filiere %in% c("Eau et Génie Civil (EGC - apprentissage)", "Eau et GÈnie Civil (EGC − apprentissage)")] <- "Eau et Génie Civil (EGC − apprentissage)"
@@ -104,38 +104,35 @@ ui <- fluidPage(
     ),
     
     tabPanel("Filieres", 
-              h4("Diagrammes de boîte (box plots) et diagrammes de dispersion"),
-              sidebarLayout(
-                sidebarPanel(
-                  checkboxGroupInput("filieres", "Sélectionner des filières", choices = unique(data$filiere_combined2)),
-                  checkboxGroupInput("sexe", "Sélectionner le sexe", choices = c("Homme","Femme"))
-                  
-                ),
-                mainPanel(
-                  plotOutput("boxplot_filiere")
-                )
-              )
+             h4("Diagrammes de boîte (box plots) et diagrammes de dispersion"),
+             sidebarLayout(
+               sidebarPanel(
+                 checkboxGroupInput("filieres", "Sélectionner des filières", choices = unique(data$filiere_combined2), selected = unique(data$filiere_combined2)),
+                 checkboxGroupInput("sexe", "Sélectionner le sexe", choices = c("Homme","Femme"), selected = c("Homme", "Femme"))
+               ),
+               mainPanel(
+                 plotOutput("boxplot_filiere")
+               )
+             )
     ),
     tabPanel("Type de Formation", 
              h4("Diagrammes de boîte (box plots) et diagrammes de dispersion"),
              sidebarLayout(
                sidebarPanel(
-                 checkboxGroupInput("typesformation", "Sélectionner des types de formation", choices = unique(data$type_combined)),
-                 checkboxGroupInput("sexes", "Sélectionner le sexe", choices = c("Homme","Femme"))
-                 
+                 checkboxGroupInput("typesformation", "Sélectionner des types de formation", choices = unique(data$type_combined), selected = unique(data$type_combined)),
+                 checkboxGroupInput("sexes", "Sélectionner le sexe", choices = c("Homme","Femme"), selected = c("Homme", "Femme"))
                ),
                mainPanel(
                  plotOutput("boxplot_typeformation")
-                 )
+               )
              )
     ),
     tabPanel("Obtention diplome", 
              h4("Diagrammes de boîte (box plots) et diagrammes de dispersion"),
              sidebarLayout(
                sidebarPanel(
-                 checkboxGroupInput("datediplome", "Sélectionner des types de formation", choices = c("2015","2016","2017","2018","2019","2020","2021","2022")),
-                 checkboxGroupInput("sexess", "Sélectionner le sexe", choices = c("Homme","Femme"))
-                 
+                 checkboxGroupInput("datediplome", "Sélectionner des types de formation", choices = c("2015","2016","2017","2018","2019","2020","2021","2022"), selected = c("2015","2016","2017","2018","2019","2020","2021","2022")),
+                 checkboxGroupInput("sexess", "Sélectionner le sexe", choices = c("Homme","Femme"), selected = c("Homme", "Femme"))
                ),
                mainPanel(
                  plotOutput("boxplot_datediplome")
@@ -205,7 +202,10 @@ ui <- fluidPage(
     ),
     tabPanel("Rémunération Annuelle Brute par Genre par Filière", 
              h4("Diagrammes de boîte par Genre et Filière"),
-             checkboxGroupInput("filiere", "Choisir des filières :", choices = unique(data_axe1$filiere)),
+             checkboxGroupInput("filiere", "Choisir des filières :", 
+                                choices = unique(data_axe1$filiere),
+                                selected = unique(data_axe1$filiere),
+                                inline = TRUE),
              plotOutput("boxplotFiliereGenre")
     ),
     tabPanel("Nationalité", 
@@ -295,7 +295,13 @@ server <- function(input, output) {
     
   })
   
+  
   output$camembert_nationalite <- renderPlot({
+    reponses_nationalite <- data_axe1 %>%
+      mutate(nationalite_francaise = ifelse(nationalite_francaise == "", "Pas de réponse", nationalite_francaise)) %>%
+      count(nationalite_francaise) %>%
+      ungroup()
+    
     # Créer un diagramme en camembert
     ggplot(reponses_nationalite, aes(x = "", y = n, fill = nationalite_francaise)) +
       geom_bar(width = 1, stat = "identity") +

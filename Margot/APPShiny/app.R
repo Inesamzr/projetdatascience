@@ -1,12 +1,46 @@
+#
+# This is a Shiny web application. You can run the application by clicking
+# the 'Run App' button above.
+#
+# Find out more about building applications with Shiny here:
+#
+#    http://shiny.rstudio.com/
+#
+
 library(shiny)
 library(ggplot2)
 library(dplyr)
-library(plotly)
-library(stringi)
 library(forcats)
 
-# Load your data outside the server function
-data <- read.csv("merged_database.csv")
+
+data <- read.csv("merged_database.csv", header = TRUE)
+
+data$filiere_combined2[data$filiere %in% c("Eau et Génie Civil (EGC - apprentissage)", "Eau et GÈnie Civil (EGC − apprentissage)")] <- "Eau et Génie Civil (EGC − apprentissage)"
+data$filiere_combined2[data$filiere %in% c("Génie Biologique et Agroalimentaires (GBA)", "GÈnie Biologique et Agroalimentaires (GBA)")] <- "Génie Biologique et Agroalimentaires (GBA)"
+data$filiere_combined2[data$filiere %in% c("Matériaux (MAT)", "MatÈriaux (MAT)")] <- "Matériaux (MAT)"
+data$filiere_combined2[data$filiere %in% c("Mécanique et Interactions (MI)", "MÈcanique et Interactions (MI)")] <- "Mécanique et Interactions (MI)"
+data$filiere_combined2[data$filiere %in% c("Mécanique Structures Industrielles (MSI − apprentissage)", "MÈcanique Structures Industrielles (MSI − apprentissage)")] <- "Mécanique Structures Industrielles (MSI − apprentissage)"
+data$filiere_combined2[data$filiere %in% c("Microélectronique Et Automatique (MEA)", "MicroÈlectronique Et Automatique (MEA)")] <- "Microélectronique Et Automatique (MEA)"
+data$filiere_combined2[data$filiere %in% c("Sciences et Technologies de l Eau (STE)", "Sciences et Technologies de l'Eau (STE)")] <- "Sciences et Technologies de l'Eau (STE)"
+data$filiere_combined2[data$filiere %in% c ("Energétique - énergies Renouvelables (EnR)")] <- "Energétique - énergies Renouvelables (EnR)"
+data$filiere_combined2[data$filiere %in% c ("Informatique et Gestion (IG)")] <- "Informatique et Gestion (IG)"
+data$filiere_combined2[data$filiere %in% c("Systèmes Embarqués (SE - apprentissage)", "Systèmes EmbarquÈs (SE - apprentissage)")] <- "Systèmes Embarqués (SE - apprentissage)"
+data$filiere_combined2[data$filiere %in% c("Mécanique Structures Industrielles (MSI - apprentissage)", "MÈcanique Structures Industrielles (MSI - apprentissage)")] <- "Mécanique Structures Industrielles (MSI - apprentissage)"
+
+data$type_combined <- ifelse(data$type_formation %in% c("Sous contrat d apprentissage", "Sous contrat d'apprentissage"),
+                             "Sous contrat d'apprentissage", data$type_formation)
+
+filtered_data <- data[!is.na(data$remuneration_prime) & data$type_combined != "", ]
+
+
+filtered_data2 <- data[!is.na(data$remuneration_prime) & data$filiere_combined2 != ""& data$filiere_combined2 != "NA",]
+
+moyennes_par_groupe <- data %>%
+  group_by(filiere_combined2, type_combined, date_diplome) %>%
+  summarise(
+    moyenne_remuneration = mean(remuneration_prime, na.rm = TRUE),
+  )
+
 data1 <- read.csv("merged_database.csv") %>%
   filter(!is.na(secteur_premiere_entreprise) & secteur_premiere_entreprise != "",
          !is.na(remuneration_annuelle_brute_avec_prime_premier_emploi) & remuneration_annuelle_brute_avec_prime_premier_emploi != "",
@@ -45,77 +79,228 @@ data3$filiere <- fct_collapse(data3$filiere,
                               "Systèmes Embarqués" = c("Systèmes Embarqués (SE - apprentissage)", "SystËmes EmbarquÈs (SE - apprentissage)")
 )
 
-# Define UI
+
+
 ui <- fluidPage(
-  tags$style(HTML("
-    body {
-      font-family: 'Arial', sans-serif;
-      background-color: #e6f7ff; /* Light Blue */
-      margin: 0;
-      padding: 0;
-    }
-
-    .shiny-tab-content {
-      padding: 20px;
-    }
-
-    h1 {
-      color: #333333;
-    }
-
-    /* Add CSS for buttons */
-    .btn-default {
-      background-color: #003366; /* Dark Blue */
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      text-align: center;
-      text-decoration: none;
-      display: inline-block;
-      font-size: 16px;
-      margin: 4px 2px;
-      cursor: pointer;
-      border-radius: 4px;
-    }
-
-    /* Add CSS for aligned checkboxes */
-    .checkbox-inline {
-      display: inline-block;
-      margin-right: 10px; /* Adjust the margin as needed */
-    }
-
-  ")),
-  titlePanel("Rémunération Premier Emploi - Shiny App"),
+  
+  titlePanel("Analyses Formation App"),
+  
   tabsetPanel(
-    tabPanel("Secteur d'activité", 
-             actionButton("selectAll1", "Sélectionner tout"),
-             actionButton("deselectAll1", "Désélectionner tout"),
-             checkboxGroupInput("genderInput", "Sélectionnez le sexe:", 
-                                choices = c("Homme", "Femme"), selected = "Homme"),
-             checkboxGroupInput("sectorInput", "Sélectionnez le secteur d'activité:",
-                                choices = unique(data1$secteur_premiere_entreprise), selected = unique(data1$secteur_premiere_entreprise)),
-             plotOutput("plot1")),
-    tabPanel("Localisation géographique", 
-             actionButton("selectAll2", "Sélectionner tout"),
-             actionButton("deselectAll2", "Désélectionner tout"),
-             checkboxGroupInput("localisationInput", "Sélectionnez la localisation:",
-                                choices = unique(data2$localisation_premier_emploi), selected = unique(data2$localisation_premier_emploi)),
-             checkboxGroupInput("countryInput", "Sélectionnez le pays:",
-                                choices = unique(data2$pays_premier_emploi), selected = unique(data2$pays_premier_emploi)),
-             plotOutput("plot2")),
-    tabPanel("Filière et Date de Diplôme", 
-             actionButton("selectAll3", "Sélectionner tout"),
-             actionButton("deselectAll3", "Désélectionner tout"),
-             checkboxGroupInput("filiereInput", "Sélectionnez la filière:",
-                                choices = unique(data3$filiere), selected = unique(data3$filiere)),
-             checkboxGroupInput("dateDiplomeInput", "Sélectionnez la date de diplôme:",
-                                choices = unique(data3$date_diplome), selected = unique(data3$date_diplome)),
-             plotOutput("plot3"))
+    
+    tabPanel("Histogrammes", 
+             h3("Histogrammes"),
+             
+             h4("Répartition des salaires par filière"),
+             plotOutput("histogram_filiere"),
+             
+             h4("Répartition des salaires par type de formation"),
+             plotOutput("histogram_typeformation"),
+             
+             h4("Répartition des salaires par date d'obtention du diplôme"),
+             plotOutput("histogram_datediplome")
+    ),
+    
+    tabPanel("Filieres", 
+             h4("Diagrammes de boîte (box plots) et diagrammes de dispersion"),
+             sidebarLayout(
+               sidebarPanel(
+                 checkboxGroupInput("filieres", "Sélectionner des filières", choices = unique(data$filiere_combined2), selected = unique(data$filiere_combined2)),
+                 checkboxGroupInput("sexe", "Sélectionner le sexe", choices = c("Homme","Femme"), selected = c("Homme", "Femme"))
+               ),
+               mainPanel(
+                 plotOutput("boxplot_filiere")
+               )
+             )
+    ),
+    tabPanel("Type de Formation", 
+             h4("Diagrammes de boîte (box plots) et diagrammes de dispersion"),
+             sidebarLayout(
+               sidebarPanel(
+                 checkboxGroupInput("typesformation", "Sélectionner des types de formation", choices = unique(data$type_combined), selected = unique(data$type_combined)),
+                 checkboxGroupInput("sexes", "Sélectionner le sexe", choices = c("Homme","Femme"), selected = c("Homme", "Femme"))
+               ),
+               mainPanel(
+                 plotOutput("boxplot_typeformation")
+               )
+             )
+    ),
+    tabPanel("Obtention diplome", 
+             h4("Diagrammes de boîte (box plots) et diagrammes de dispersion"),
+             sidebarLayout(
+               sidebarPanel(
+                 checkboxGroupInput("datediplome", "Sélectionner des types de formation", choices = c("2015","2016","2017","2018","2019","2020","2021","2022"), selected = c("2015","2016","2017","2018","2019","2020","2021","2022")),
+                 checkboxGroupInput("sexess", "Sélectionner le sexe", choices = c("Homme","Femme"), selected = c("Homme", "Femme"))
+               ),
+               mainPanel(
+                 plotOutput("boxplot_datediplome")
+               )
+             )
+    ),
+    tabPanel("Analyse des Moyennes par Groupe",
+             sidebarLayout(
+               sidebarPanel(
+                 checkboxGroupInput("filieress", "Sélectionnez une filière", unique(data$filiere_combined2)),
+                 checkboxGroupInput("type_formationss", "Sélectionnez un type de formation", unique(data$type_combined)),
+                 checkboxGroupInput("date_diplomess", "Sélectionnez une date de diplomation", choices = c("2015","2016","2017","2018","2019","2020","2021","2022"))
+               ),
+               mainPanel(
+                 plotOutput("moyennes_plot")
+               )
+             ),
+    ),
+    
+    tabPanel("Analyse Secteur d'activité Salaire Premier Emploi", 
+             sidebarLayout(
+               sidebarPanel(
+                 checkboxGroupInput("genderInput", "Sélectionnez le sexe:", 
+                                    choices = c("Homme", "Femme"), selected = "Homme"),
+                 checkboxGroupInput("sectorInput", "Sélectionnez le secteur d'activité:",
+                                    choices = unique(data1$secteur_premiere_entreprise), selected = unique(data1$secteur_premiere_entreprise)),
+               ),
+               mainPanel(
+                 plotOutput("plot1"))
+             ),
+    ),
+    tabPanel("Analyse Localisation géographique Salaire Premier Emploi", 
+             sidebarLayout(
+               sidebarPanel(
+                 checkboxGroupInput("localisationInput", "Sélectionnez la localisation:",
+                                    choices = unique(data2$localisation_premier_emploi), selected = unique(data2$localisation_premier_emploi)),
+                 checkboxGroupInput("countryInput", "Sélectionnez le pays:",
+                                    choices = unique(data2$pays_premier_emploi), selected = unique(data2$pays_premier_emploi)),
+               ),
+               mainPanel(
+                 plotOutput("plot2"))
+             ),
+    ),
+    tabPanel("Filière et Date de Diplôme Salaire Premier Emploi", 
+             sidebarLayout(
+               sidebarPanel(
+                 checkboxGroupInput("filiereInput", "Sélectionnez la filière:",
+                                    choices = unique(data3$filiere), selected = unique(data3$filiere)),
+                 checkboxGroupInput("dateDiplomeInput", "Sélectionnez la date de diplôme:",
+                                    choices = unique(data3$date_diplome), selected = unique(data3$date_diplome)),
+               ),
+               mainPanel(
+                 plotOutput("plot3"))
+             )
+    )
+    
+    
   )
 )
 
-# Define Server
-server <- function(input, output, session) {
+server <- function(input, output) {
+  
+  output$histogram_filiere <- renderPlot({
+    
+    
+    histogram3 <- ggplot(data, aes(x = filiere_combined2, y = remuneration_prime, fill = filiere_combined2)) +
+      geom_bar(stat = "identity", position = "dodge", alpha = 0.7) +
+      labs(title = "Répartition des salaires par filière",
+           x = "Filière",
+           y = "Rémunération Prime") +
+      scale_fill_brewer(palette = "Paired") +
+      theme_minimal() 
+    print(histogram3)
+  })
+  
+  output$histogram_typeformation <- renderPlot({
+    
+    
+    histogram <- ggplot(filtered_data, aes(x = type_combined, y = remuneration_prime, fill = type_combined)) +
+      geom_bar(stat = "identity", position = "dodge", alpha = 0.7) +
+      labs(title = "Répartition des salaires par type de formation",
+           x = "Type de Formation",
+           y = "Rémunération Prime") +
+      scale_fill_brewer(palette = "Set2") +
+      theme_minimal() 
+    print(histogram)
+  })
+  
+  # Convertir date_diplome en facteur
+  data$date_diplome <- as.factor(data$date_diplome)
+  
+  # Puis utiliser le code pour le graphique
+  output$histogram_datediplome <- renderPlot({
+    histogram2 <- ggplot(subset(data, date_diplome != "721"), aes(x = date_diplome, y = remuneration_prime, fill = date_diplome)) +
+      geom_col(alpha = 0.7) +
+      labs(title = "Répartition des salaires par date d'obtention du diplôme",
+           x = "Date d'obtention du diplôme",
+           y = "Rémunération Prime") +
+      scale_fill_brewer(palette = "Set2") +
+      theme_minimal()
+    
+    print(histogram2)
+  })
+  
+  
+  
+  output$boxplot_filiere <- renderPlot({
+    filtered_data3 <- data[!is.na(data$remuneration_prime) & 
+                             data$filiere_combined2 %in% input$filieres & 
+                             data$sexe %in% input$sexe, ]
+    
+    ggplot(filtered_data3, aes(x = factor(filiere_combined2), y = remuneration_prime, fill = factor(sexe))) +
+      geom_boxplot(width = 0.6) + 
+      labs(x = "Filière", y = "Rémunération Prime") +
+      ggtitle(paste("Variation de la rémunération Prime pour les filières sélectionnées")) +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+  }, height = 600, width = 1200)  
+  
+  output$boxplot_typeformation <- renderPlot({
+    filtered_data4 <- data[!is.na(data$remuneration_prime) & 
+                             data$type_combined %in% input$typesformation & 
+                             data$sexe %in% input$sexes, ]
+    
+    ggplot(filtered_data4, aes(x = factor(type_combined), y = remuneration_prime, fill = factor(sexe))) +
+      geom_boxplot(width = 0.6) +  
+      labs(x = "Type de Formation", y = "Rémunération Prime") +
+      ggtitle(paste("Variation de la rémunération Prime par type de formation")) +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+  }, height = 600, width = 1200)  
+  
+  output$boxplot_datediplome <- renderPlot({
+    filtered_data5 <- data[!is.na(data$remuneration_prime) & 
+                             data$date_diplome %in% input$datediplome & 
+                             data$sexe %in% input$sexess & 
+                             data$date_diplome != "721" & 
+                             data$date_diplome != "NA", ]
+    
+    ggplot(filtered_data5, aes(x = factor(date_diplome), y = remuneration_prime, fill = factor(sexe))) +
+      geom_boxplot(width = 0.6) +  
+      labs(x = "Date d'obtention du diplôme", y = "Rémunération Prime") +
+      ggtitle("Variation de la rémunération Prime par date d'obtention du diplôme") +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+  }, height = 600, width = 1200) 
+  
+  filtered_data_moyenne <- reactive({
+    filter_data_moyenne <- moyennes_par_groupe
+    if (!is.null(input$filieress)) {
+      filter_data_moyenne <- filter_data_moyenne[filter_data_moyenne$filiere_combined2 == input$filieress, ]
+    }
+    if (!is.null(input$type_formationss)) {
+      filter_data_moyenne <- filter_data_moyenne[filter_data_moyenne$type_combined == input$type_formationss, ]
+    }
+    if (!is.null(input$date_diplomess)) {
+      filter_data_moyenne <- filter_data_moyenne[filter_data_moyenne$date_diplome == input$date_diplomess, ]
+    }
+    filter_data_moyenne
+  })
+  
+  output$moyennes_plot <- renderPlot({
+    ggplot(filtered_data_moyenne(), aes(x = factor(filiere_combined2), y = moyenne_remuneration, fill = factor(type_combined), fill = factor(date_diplome))) +
+      geom_bar(stat = "identity", position = "dodge") +
+      labs(title = "Moyennes par Groupe",
+           x = "Filière",
+           y = "Moyenne de Rémunération") +
+      scale_fill_brewer(palette = "Set2") +
+      theme_minimal()
+  })
+  
   
   # Diagramme 1 - Rémunération en fonction du secteur d'activité
   output$plot1 <- renderPlot({
@@ -220,7 +405,8 @@ server <- function(input, output, session) {
     updateCheckboxGroupInput(session, "filiereInput", selected = character(0))
     updateCheckboxGroupInput(session, "dateDiplomeInput", selected = character(0))
   })
+  
+  
 }
-
-# Run the Shiny App
 shinyApp(ui = ui, server = server)
+
