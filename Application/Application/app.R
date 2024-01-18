@@ -14,6 +14,8 @@ library(forcats)
 
 
 data <- read.csv("merged_database.csv", header = TRUE)
+data_axe1 <- read.csv('donnees_combinees_filtrees.csv')
+
 
 data$filiere_combined2[data$filiere %in% c("Eau et Génie Civil (EGC - apprentissage)", "Eau et GÈnie Civil (EGC − apprentissage)")] <- "Eau et Génie Civil (EGC − apprentissage)"
 data$filiere_combined2[data$filiere %in% c("Génie Biologique et Agroalimentaires (GBA)", "GÈnie Biologique et Agroalimentaires (GBA)")] <- "Génie Biologique et Agroalimentaires (GBA)"
@@ -98,6 +100,7 @@ ui <- fluidPage(
              
              h4("Répartition des salaires par date d'obtention du diplôme"),
              plotOutput("histogram_datediplome")
+             
     ),
     
     tabPanel("Filieres", 
@@ -193,6 +196,29 @@ ui <- fluidPage(
              mainPanel(
              plotOutput("plot3"))
              )
+    ),
+    tabPanel("Genre", 
+             h3("Genre"),
+                h4("Distribution des réponses"),
+                plotOutput("camembert_reponses"),
+                      
+                h4("Distribution des réponses par genre par filière"),
+                plotOutput("diagramme_empile_GF"),
+                      
+                h4("Rémunération annuelle brute par genre"),
+                plotOutput("boxplots_Genre")
+             
+    ),
+    tabPanel("Rémunération Annuelle Brute par Genre par Filière", 
+             h4("Diagrammes de boîte par Genre et Filière"),
+             checkboxGroupInput("filiere", "Choisir des filières :", choices = unique(data_axe1$filiere)),
+             plotOutput("boxplotFiliereGenre")
+    ),
+    tabPanel("Nationalité", 
+             h3("Nationalité"),
+                h4("Distribution des réponses des français par rapport aux étrangers"),
+                plotOutput("camembert_nationalite"),
+             
     )
     
     
@@ -241,6 +267,81 @@ server <- function(input, output) {
       theme_minimal()
     
     print(histogram2)
+  })
+  
+  output$diagramme_empile_GF <- renderPlot({
+    ggplot(data_axe1, aes(x = filiere, fill = sexe)) +
+      geom_bar(position = "fill") +
+      scale_y_continuous(labels = scales::percent) +
+      scale_fill_manual(values = c("Homme" = "#4477AA", "Femme" = "#EE6677", "Ne souhaite pas répondre" = "grey50")) +
+      labs(x = "Filière", y = "Pourcentage", fill = "Sexe",
+           title = "Répartition par Sexe au sein de chaque Filière") +
+      theme_minimal() +
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+    
+  })
+  
+  output$camembert_reponses <- renderPlot({
+    # Compter le nombre de réponses par sexe
+    reponses_par_sexe <- data_axe1 %>%
+      group_by(sexe) %>%
+      summarise(Nombre = n()) %>%
+      ungroup()
+    
+    ggplot(reponses_par_sexe, aes(x = "", y = Nombre, fill = sexe)) +
+      geom_bar(width = 1, stat = "identity") +
+      coord_polar(theta = "y") +
+      theme_void() +
+      scale_fill_manual(values = c("Femme" = "#EE6677",  
+                                   "Homme" = "#4477AA",  
+                                   "Ne souhaite pas répondre" = "grey50")) +
+      labs(title = "Répartition des Réponses par Genre",
+           fill = "Sexe") +
+      theme(legend.title = element_blank())
+    
+  })
+  
+  output$camembert_nationalite <- renderPlot({
+    # Créer un diagramme en camembert
+    ggplot(reponses_nationalite, aes(x = "", y = n, fill = nationalite_francaise)) +
+      geom_bar(width = 1, stat = "identity") +
+      coord_polar(theta = "y") +
+      labs(fill = "Nationalité Française", 
+           title = "Proportion des Répondants par Statut de Nationalité Française") +
+      scale_fill_brewer(palette = "Set1") +
+      theme_void() +
+      theme(legend.title = element_blank(), legend.position = "bottom")
+    
+  })
+  
+  output$boxplots_Genre <- renderPlot({
+    # le boxplot des salaires par genre
+        library(dplyr)
+    
+    # Calculer les outliers manuellement
+    outliers <- data_axe1 %>%
+      group_by(sexe) %>%
+      summarize(
+        lower = quantile(remuneration_annuelle_brute, probs = 0.25) - 1.5 * IQR(remuneration_annuelle_brute),
+        upper = quantile(remuneration_annuelle_brute, probs = 0.75) + 1.5 * IQR(remuneration_annuelle_brute),
+        .groups = 'drop'  # Ajouté pour éviter les avertissements dans dplyr 1.0.0 et plus
+      ) %>%
+      left_join(data_axe1, by = "sexe") %>%
+      filter(remuneration_annuelle_brute < lower | remuneration_annuelle_brute > upper)
+    
+    # Créer le boxplot de base sans outliers
+    base_plot <- ggplot(data_axe1, aes(x = sexe, y = remuneration_annuelle_brute)) +
+      geom_boxplot(outlier.shape = NA) +  # Suppression des outliers dans cette couche
+      labs(title = "Salaires par Genre", x = "Sexe", y = "Salaire Annuel Brut")
+    
+    # Ajouter les outliers avec des couleurs spécifiques pour chaque sexe
+    final_plot <- base_plot + 
+      geom_point(data = outliers, aes(x = sexe, y = remuneration_annuelle_brute, colour = sexe), shape = 1) +
+      scale_colour_manual(values = c("Homme" = "blue", "Femme" = "red", "Ne souhaite pas répondre" = "grey")) +
+      theme(legend.position = "none")  # Cache la légende
+    
+    # Afficher le graphique final
+    print(final_plot)
   })
   
   
@@ -363,6 +464,10 @@ server <- function(input, output) {
       theme_minimal()
   })
   
+  
+  
+  
+  
   observeEvent(input$selectAll1, {
     updateCheckboxGroupInput(session, "genderInput", selected = c("Homme", "Femme"))
     updateCheckboxGroupInput(session, "sectorInput", selected = unique(data1$secteur_premiere_entreprise))
@@ -415,7 +520,37 @@ server <- function(input, output) {
     updateCheckboxGroupInput(session, "dateDiplomeInput", selected = character(0))
   })
   
+  output$boxplotFiliereGenre <- renderPlot({
+    if (!is.null(input$filiere)) {
+      filtered_data <- data_axe1 %>%
+        filter(filiere %in% input$filiere)
+      boxplotFiliereGenre(filtered_data)
+    }
+  })
+  
+  boxplotFiliereGenre <- function(data) {
+    ggplot(data, aes(x = filiere, y = remuneration_annuelle_brute)) +
+      geom_boxplot(aes(fill = sexe), position = position_dodge(0.8), outlier.colour = "black", outlier.shape = 1) +
+      scale_fill_manual(values = c("Femme" = "#EE6677", "Homme" = "#4477AA", "Ne souhaite pas répondre" = "grey50")) +
+      theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5)) +
+      labs(title = "Boxplot de la Rémunération Annuelle Brute par Filière et Sexe",
+           x = "Filière",
+           y = "Rémunération Annuelle Brute") +
+      theme_minimal() +
+      theme(legend.position = "bottom") +  
+      scale_y_continuous(breaks = seq(0, 100000, by = 10000), labels = scales::comma, limits = c(0, 100000))
+  }
+  
+  
+  
+  
+  
   
 }
+
+
+
+
+
 shinyApp(ui = ui, server = server)
 
