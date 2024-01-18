@@ -28,6 +28,7 @@ ui <- fluidPage(
       actionButton("btnSalaires", "Salaires par Genre"),
       actionButton("btnSexe", "Réponses par Sexe"),
       actionButton("btnFiliere", "Rémunération Annuelle Brute par Filière"),
+      actionButton("btnNationalite", "Nationalité"),
       actionButton("btnFiliereGenre", "Rémunération Annuelle Brute par Genre par Filière"),
       # Cases à cocher pour choisir la filèreGenre
       checkboxGroupInput("filiere", "Choisir des filières :", choices = unique(donnees_combinees_filtrees$filiere))
@@ -57,6 +58,12 @@ server <- function(input, output) {
   observeEvent(input$btnFiliere, {
     output$activePlot <- renderPlot({
       boxplotFiliere(data)
+    })
+  })
+  
+  observeEvent(input$btnNationalite, {
+    output$activePlot <- renderPlot({
+      pieChartNationalite(data)
     })
   })
   
@@ -106,16 +113,42 @@ boxplotSalaires <- function(data) {
   print(final_plot)
 }
 
+pieChartNationalite <- function(data) {
+  ggplot(reponses_nationalite, aes(x = "", y = n, fill = nationalite_francaise)) +
+    geom_bar(width = 1, stat = "identity") +
+    coord_polar(theta = "y") +
+    labs(fill = "Nationalité Française", 
+         title = "Proportion des Répondants par Statut de Nationalité Française") +
+    scale_fill_brewer(palette = "Set1") +
+    theme_void() +
+    theme(legend.title = element_blank(), legend.position = "bottom")
+  
+  
+}
+
+
+stackedBarChartSexe <- function(data) {
+  ggplot(data, aes(x = filiere, fill = sexe)) +
+    geom_bar(position = "fill") +
+    scale_y_continuous(labels = scales::percent) +
+    scale_fill_manual(values = c("Homme" = "#4477AA", "Femme" = "#EE6677", "Ne souhaite pas répondre" = "grey50")) +
+    labs(x = "Filière", y = "Pourcentage", fill = "Sexe",
+         title = "Répartition par Sexe au sein de chaque Filière") +
+    theme_minimal() +
+    theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
+}
+
+
 # Fonction pour le diagramme en camembert des réponses par sexe
 pieChartSexe <- function(data) {
-  # Insérer le code pour le diagramme en camembert des réponses par sexe
   # Compter le nombre de réponses par sexe
-  reponses_par_sexe <- donnees_combinees_filtrees %>%
+  reponses_par_sexe <- data %>%
     group_by(sexe) %>%
     summarise(Nombre = n()) %>%
     ungroup()
   
-  ggplot(reponses_par_sexe, aes(x = "", y = Nombre, fill = sexe)) +
+  # Créer le diagramme en camembert
+  pie_chart <- ggplot(reponses_par_sexe, aes(x = "", y = Nombre, fill = sexe)) +
     geom_bar(width = 1, stat = "identity") +
     coord_polar(theta = "y") +
     theme_void() +
@@ -126,7 +159,16 @@ pieChartSexe <- function(data) {
          fill = "Sexe") +
     theme(legend.title = element_blank())
   
+  # Créer le diagramme en barres empilées
+  stacked_bar_chart <- stackedBarChartSexe(data)
+  
+  # Afficher les deux graphiques l'un en dessous de l'autre
+  library(gridExtra)
+  grid.arrange(pie_chart, stacked_bar_chart, nrow = 1)
+  
 }
+
+
 
 # Fonction pour le boxplot de la rémunération annuelle brute par filière
 boxplotFiliere <- function(data) {
