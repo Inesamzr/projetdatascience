@@ -30,7 +30,7 @@ data2019$identifiant <- as.numeric(format(data2019$identifiant, scientific = FAL
 
 ```
 
-##Selection des colonnes nécessaires pour l'analyse 
+##Selection des colonnes : 
 ```{r}
 library(dplyr)
 
@@ -53,7 +53,9 @@ data2023 <- select(data2023, sexe, identifiant, date_diplome, filiere, remunerat
 donnees_totales <- rbind(data2018, data2019, data2020, data2021, data2022, data2023)
 ```
 
-##Analyse des données
+##Analyse Exploratoire des données 
+L'Analyse exploratoire des données est une étape cruciale dans tout projet de data science car elle nous permet de comprendre les tendances, les motifs, les anomalies et les relations dans nos données. démarche que nous avons effectuée dans nos analyses et qui nous a permi de corriger certaines anomalies qui peuvent fausser nos résultats. 
+
 ```{r}
 #vérifier si le jeu de données a bien été crée : 
 exists("donnees_totales")
@@ -71,8 +73,26 @@ str(donnees_totales)
 dim(donnees_totales)
 
 ```
+La structure de cette partie du jeu de données contient 4419 observations et 12 variables.
+
+* sexe : Variable catégorique avec des chaînes de caractères telles que "Femme".
+* identifiant : Variable de type chaîne de caractères, unique pour chaque observation.
+* date_diplome : Variable numérique représentant l'année d'obtention du diplôme, avec des valeurs comme 2017.
+* filiere : Variable catégorique indiquant la spécialisation, comme "Microélectronique Et Automatique (MEA)".
+* remuneration_annuelle_brute : Variable de type chaîne de caractères avec des valeurs comme "31500", "33000", "36000" indiquant les    salaires annuels bruts.
+* prime : Variable catégorique indiquant si une prime a été reçue, avec des réponses "Non" ou "Oui".
+* remuneration_prime : Variable de type chaîne de caractères avec des valeurs indiquant la prime reçue.
+* remuneration_annuelle_brute_hors_prime_premier_emploi : Variable numérique des salaires   comme 29000.
+* nationalite_francaise : Variable catégorique avec des réponses "Non" ou "Oui", indiquant si la personne a la nationalité française    ou pas.
+* nationalite : Variable catégorique avec des nationalités comme "Belge".
+* prime_premier_emploi : Variable catégorique indiquant si une prime a été reçue lors du premier emploi.
+* remuneration_annuelle_brute_avec_prime_premier_emploi : Variable numérique. 
+
+La dimension du jeu de données est de 4419 observations (lignes) et 12 variables (colonnes). Les nombreuses valeurs manquantes (NA) dans certaines seront traitées dans la suite de l'Analyse.
+
 ## Avoir les occurences des identifiants 
 
+Nous allons explorer les données et voir combien de fois les diplomés ont répondus à l'enquête
 ```{r}
 #Compter les occurences de chaque identifiant
 identifiant_counts <- table(donnees_totales$identifiant)
@@ -93,7 +113,7 @@ kable(identifiant_counts_df)
 ```
 
 ## Identifiants réccurents seulement 
-
+Ici, nous allons sélectionnées seulement, les personnes qui ont répondus plusieurs fois à l'enquête
 ```{r}
 library(knitr)
 
@@ -107,6 +127,7 @@ kable(identifiants_recurrents_df)
 
 ```
 
+Ici, nous avons une vue de toutes les colonnes pour les individus qui ont répondus plusieurs fois.
 ```{r}
 library(knitr)
 library(kableExtra)
@@ -122,6 +143,7 @@ kable(head(donnees_recurrentes), "html", escape = FALSE) %>%
 ```
 
 ## Identifiants non récurrents seulement 
+Nous allons sélectionner les individus qui ont répondus qu'une seule fois à l'enquête 
 ```{r}
 library(knitr)
 
@@ -137,6 +159,7 @@ kable(identifiants_non_recurrents_df) %>%
               extra_css = "padding-left:10px; padding-right:10px; text-align:center;")
 ```
 
+Et pareil, ici nous avons un tableau avec toutes les colonnes pour les individus qui ont répondus une seule fois
 ```{r}
 library(knitr)
 library(kableExtra)
@@ -151,7 +174,7 @@ kable(head(donnees_non_recurrentes), "html", escape = FALSE) %>%
               extra_css = "padding-left:10px; padding-right:10px; text-align:center;")
 ```
 
-##Analyse exploratoire des données
+##Analyse exploratoire des données d'individus réccurents et non réccurents
 
 #Visualiser la distribution des salaires pour les individus avec plusieurs réponses
 ```{r}
@@ -182,6 +205,15 @@ ggplot(donnees_recurrentes, aes(x = remuneration_annuelle_brute)) +
   theme_minimal() +
   theme(text = element_text(size = 12))
 ```
+
+Interprétation de l'histogramme ci-dessus :
+
+L'histogramme illustre la distribution des salaires annuels bruts pour l'ensemble d'individus récurrents. La distribution semble être centrée autour de la médiane, avec une concentration élevée de salaires dans la fourchette moyenne. 
+La forme de l'histogramme suggère une distribution assez symétrique avec une légère inclinaison vers la droite, indiquant que quelques individus ont des salaires nettement plus élevés que la majorité, ce qui est typique d'une distribution de revenus.
+
+La fréquence la plus élevée se trouve dans l'intervalle de salaire qui pourrait être estimé entre environ 30 000 et 40 000, ce qui pourrait être considéré comme le salaire annuel brut le plus commun au sein de cet échantillon. Les barres décroissent à mesure que l'on s'éloigne de cette fourchette centrale, ce qui montre que les salaires extrêmement bas ou extrêmement élevés sont moins fréquents.
+
+Boxplot des salaires des individus réccurents : 
 ```{r}
 library(ggplot2)
 library(scales)  # pour les fonctions de formatage
@@ -199,6 +231,7 @@ ggplot(donnees_recurrentes, aes(y = remuneration_annuelle_brute)) +
   )
 
 ```
+
 #Visualiser la distribution des salaires pour les individus non réccurents
 ```{r}
 library(ggplot2)
@@ -246,7 +279,7 @@ ggplot(donnees_non_recurrentes, aes(y = remuneration_annuelle_brute)) +
 
 ```
 #Calcul des moyennes de salaires des individus qui ont répondus plusieurs fois
-
+Pour les individus qui ont fourni plusieurs réponses concernant leur salaire annuel brut, nous procéderons à un calcul de la moyenne de ces salaires afin d'obtenir une valeur représentative unique pour chaque personne. Cela nous permettra de poursuivre notre analyse de façon cohérente et précise pour cet aspect spécifique de l'étude.
 ```{r}
 library(dplyr)
 
@@ -288,8 +321,9 @@ salaire_moyen_individus_recurrents <- salaire_moyen_individus_recurrents %>%
 head(salaire_moyen_individus_recurrents)
 
 ```
+
 #vérification des occurences d'individus dans ce data frame
-Pour un individu, il n'y a plus qu'une seule ligne avec toutes les colonnes concernant le salaire (où il y a une moyenne des salaires de cette personne)
+Pour un individu, il n'y a plus qu'une seule ligne avec toutes les colonnes concernant le salaire (où il y a une moyenne des salaires de cette personne)=> Une seule occurence des personnes quiont répondus plusieurs fois
 ```{r}
 # Recalculer les occurrences des identifiants après avoir utilisé `distinct`
 identifiant_counts_filtrees <- salaire_moyen_individus_recurrents %>%
@@ -301,7 +335,7 @@ kable(identifiant_counts_filtrees, caption = "Occurrences des Identifiants aprè
 ```
 
 ##Combinaison des salaires moyens des individus réccurents et de ceux non réccurents
-
+Nous allons maintenant combiner les 2 jeux de données pour pouvoir continuer l'analyse dessus. 
 ```{r}
 # Renommer la colonne pour qu'elle corresponde dans les deux dataframes
 #donnees_non_recurrentes <- donnees_non_recurrentes %>%
@@ -328,6 +362,7 @@ head(donnees_combinees_filtrees)
 ```
 
 #Vérifier s'il y a toujours des occurences > 1 pour les individus :
+Ici, les NA ne sont pas ceux que nous avons traitées et ça nous sert de test pour l'affichage et être sûres qu'il n'y a pas des occurences d'individus
 ```{r}
 library(knitr)
 
@@ -341,7 +376,9 @@ identifiants_recurrents_df <- donnees_combinees_counts %>%
 kable(identifiants_recurrents_df, caption = "Identifiants récurrents dans donnees_combinees")
 
 ```
-Donc ici, on voit bien qu'il n 'y a plus d'individus réccurents, le traitement a bien fonctionné (Le NA ici c'est juste pour faire le test).
+
+Donc ici, nous voyons bien qu'il n 'y a plus d'individus réccurents, le traitement a bien fonctionné (Le NA ici c'est juste pour faire le test).
+
 Encore une vérification dans le tableau suivant : 
 ```{r}
 library(knitr)
@@ -363,8 +400,19 @@ kable(identifiant_counts_filtrees, caption = "Nombre d'occurrences par identifia
 summary(donnees_combinees_filtrees)
 
 ```
+D'après la statistique descriptive sur certaine variables, voici quelques observations:
 
-
+1. **Répartition des Salaires :**
+    - La colonne **`remuneration_annuelle_brute`** semble avoir une large gamme de valeurs allant de 0 à 1068000. Le 0 c’est normal, il y a une valeur de test que nous avons laissé pour faire des vérifications plutard quand nous avons fait la moyenne des salaires de ceux qui ont répondus plusieurs fois.
+    - La médiane des salaires est de 33 000, ce qui est un bon indicateur du "salaire typique" car la médiane est moins sensible aux valeurs extrêmes que la moyenne.
+2. **Colonnes avec des Valeurs `NA` :**
+    - Les colonnes **`remuneration_annuelle_brute_hors_prime_premier_emploi`** et **`remuneration_annuelle_brute_avec_prime_premier_emploi`** contiennent un grand nombre de valeurs **`NA`** (1811 occurrences chacune). La gestion de ces valeurs est faite par la suite en fonction des axes et des besoins.
+3. **Colonnes Catégorielles :**
+    - Les colonnes telles que **`sexe`**, **`date_diplome`**, **`filiere`**, **`nationalite_francaise`**, et **`nationalite`** sont de type caractère.
+4. **Primes :**
+    - La colonne **`prime`** est une variable catégorielle (peut-être indiquant si une prime a été reçue ou non), tandis que **`remuneration_prime`** est numérique et montre la valeur de la prime elle-même.
+    
+# Histogramme de la distribution des salaires dans le nouveau jeu de donées 
 ```{r}
 library(ggplot2)
 ggplot(donnees_combinees_filtrees, aes(x = remuneration_annuelle_brute)) +
@@ -392,6 +440,7 @@ ggplot(donnees_combinees_filtrees, aes(x = remuneration_annuelle_brute)) +
 #  theme(text = element_text(size = 12))
 ```
 
+#Boxplot pour voir la distribution des salires du nouveau jeu de données
 ```{r}
 # Boîte à moustaches pour voir la dispersion et les éventuels outliers
 ggplot(donnees_combinees_filtrees, aes(y = remuneration_annuelle_brute)) +
@@ -407,6 +456,8 @@ ggplot(donnees_combinees_filtrees, aes(y = remuneration_annuelle_brute)) +
 
 ```
 
+#Distribution des salaires par genre : 
+Comme nous pouvons le voir dans les boxplots ci-dessous, lorsqu'on considère l'ensemble des filières, la médiane des rémunérations pour les femmes est légèrement inférieure à celle des hommes. Cet écart médian appuie l’hypothèse de l'existence d'une disparité salariale entre les genres.
 ```{r}
 ggplot(donnees_combinees_filtrees, aes(x = sexe, y = remuneration_annuelle_brute)) +
   geom_boxplot(outlier.colour = "red", outlier.shape = 1) +
@@ -445,6 +496,7 @@ print(final_plot)
 
 ```
 
+Calcul et affichage des valeurs : 
 ```{r}
 # Supposons que votre dataframe s'appelle 'donnees' et la colonne de salaire 'salaire_annuel_brut'
 # Et que la colonne 'sexe' contient les genres
@@ -464,7 +516,6 @@ print(paste("Quartiles pour les hommes:", stats_hommes$stats))
 print(paste("Valeurs aberrantes pour les hommes:", stats_hommes$out))
 
 ```
-
 
 #Nombre de personnes qui ont répondus à l'enquête par filière 
 ```{r}
@@ -547,6 +598,8 @@ ggplot(donnees_combinees_filtrees, aes(x = filiere, fill = sexe)) +
   theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
 
 ```
+il existe une disparité entre les sexes dans pratiquement toutes les filières, avec une prédominance masculine notable (en tout cas parmi ceux qui ont répondus à l’enquête). GBA est la seule filère où la balance est inversée et que donc, on retrouve le taux de femmes le plus élevé avec les STE en suite. 
+
 ```{r}
 # Créer un graphique à facettes
 ggplot(donnees_combinees_filtrees, aes(x = sexe, fill = sexe)) +
@@ -559,6 +612,7 @@ ggplot(donnees_combinees_filtrees, aes(x = sexe, fill = sexe)) +
 
 ```
 
+#Rémunération annuelle brute par filière : 
 
 ```{r}
 library(ggplot2)
@@ -572,6 +626,7 @@ ggplot(donnees_combinees_filtrees, aes(x = filiere, y = remuneration_annuelle_br
   theme_minimal()
 
 ```
+En faisant les analyses avec les filières, nous nous sommes rendues compte qu’une même filière pouvait être écrite de 2 manières différentes donc il fallait normaliser les noms de filières : 
 ```{r}
 #Normalisation des noms de filières : 
 donnees_combinees_filtrees <- donnees_combinees_filtrees %>%
@@ -626,6 +681,7 @@ ggplot(donnees_combinees_filtrees, aes(x = filiere, y = remuneration_annuelle_br
 
 ```
 
+Les boxplots avec les couleurs de filières à Polytech Montpellier : 
 ```{r}
 ggplot(donnees_combinees_filtrees, aes(x = filiere, y = remuneration_annuelle_brute, fill = filiere)) +
   geom_boxplot() +
@@ -641,6 +697,7 @@ ggplot(donnees_combinees_filtrees, aes(x = filiere, y = remuneration_annuelle_br
 
 ```
 
+#Rémunération annuelle brute par filière et par sexe : 
 ```{r}
 ggplot(donnees_combinees_filtrees, aes(x = filiere, y = remuneration_annuelle_brute)) +
   geom_boxplot(aes(fill = sexe), position = position_dodge(0.8), outlier.colour = "black", outlier.shape = 1) +
@@ -663,6 +720,7 @@ unique(donnees_combinees_filtrees$nationalite_francaise)
 # Vérifier les niveaux uniques pour toutes les nationalités
 unique(donnees_combinees_filtrees$nationalite)
 ```
+
 ```{r}
 #Normalisation des noms de filières : 
 donnees_combinees_filtrees <- donnees_combinees_filtrees %>%
@@ -694,6 +752,7 @@ nationalite_unique <- unique(donnees_combinees_filtrees$nationalite)
 print(nationalite_unique)
 
 ```
+
 #Proportion des personnes qui ont répondus à la question de s'ils ont la nationalité française ou pas : 
 ```{r}
 # Compter le nombre de réponses par catégorie de nationalité française
@@ -790,6 +849,7 @@ ggplot(donnees_nettoyees_nationalite, aes(x = nationalite_francaise, y = remuner
   theme(axis.text.x = element_text(angle = 45, hjust = 1))
 
 ```
+
 ```{r}
 # Compter le nombre de réponses par catégorie de nationalité française dans donnees_nettoyees
 reponses_nationalite_nettoyees <- donnees_nettoyees_nationalite %>%
@@ -827,6 +887,7 @@ write.csv(donnees_combinees_filtrees, file = "donnees_combinees_filtrees.csv", r
 
 ```
 
+#Nombre de personnes selon les nationalités : 
 ```{r}
 # Chargement des librairies nécessaires
 library(ggplot2)
@@ -847,6 +908,8 @@ ggplot(nationalite_counts, aes(x = reorder(nationalite, -Nombre), y = Nombre)) +
   theme(axis.text.x = element_text(angle = 90, hjust = 1, vjust = 0.5))  # Incliner les étiquettes pour une meilleure lisibilité
 
 ```
+
+#Boxplot des salaires par nationalité : 
 ```{r}
 # Chargement des librairies nécessaires
 library(ggplot2)
@@ -886,6 +949,7 @@ ggplot(donnees_combinees_filtrees, aes(x = nationalite, y = remuneration_annuell
 ```
 
 
+Calcul des premiers, troisièmes quartiles et de la médiane pour chaque filière : 
 ```{r}
 # Pour chaque filière, calculer les quartiles et la médiane
 quartiles_medianes <- donnees_combinees_filtrees %>%
@@ -901,3 +965,34 @@ print(quartiles_medianes)
 
 ```
 
+
+Remarque : Nous avons fait d'autres diagrammes et nous faisions des commits directements sur le terminal de R et à chaque fois que nous ouvrions le document markdown, nous ne les trouvions pas. Le problème était que le terminal en R ne fonctionnait pas très bien pour les commits et ça nous a fait perdre du travail.
+
+Explications supplémentaires : 
+* Nous avons remarqué qu’il y avait 578 occurences avec des identifiants sous forme scientifique "1,76719E+15” avec des individus qui   ont répondu plusieurs fois.
+  Au début nous ne comprenions pas pourquoi et comment c’est possible. Après nous nous sommes rendues compte que le fichiers 2019, les     identifiants étaient sous la forme scientifique ( et là c’est devenu logique, parce que les individus avec les identifiants           complets, l’occurence de leurs réponses maximum était de 3 fois, ce qui était logique car en tout, un individu devait répondre à      l’enquête 3 fois maximum : une fois à 6mois, une à 18mois et une à 30mois. 
+
+    Solution : nous avons homogéneisé la colonne identifiant dans le fichier 2019 en faisant une conversion : 
+                  data2019$identifiant <- as.numeric(format(data2019$identifiant, scientific = FALSE))
+                  
+# Data Frame	Explications
+  * donnees_totales	c’est le data frame qui contient toutes les données des 6 fichiers avec les colonnes suivantes : 
+sexe, identifiant, date_diplome, filiere, remuneration_annuelle_brute, prime, remuneration_prime, remuneration_annuelle_brute_hors_prime_premier_emploi, nationalite_francaise,nationalite, prime_premier_emploi, remuneration_annuelle_brute_avec_prime_premier_emploi
+
+  * donnees_recurrentes	les données seulement avec les entrées avec des identifiants récurrents
+  
+  * donnees_non_recurrentes	les données seulement avec les entrées avec des identifiants non récurrents
+  
+  * donnees_combinees	Combinaison des salaires moyens des individus réccurents et de ceux non réccurents
+  
+  * salaire_moyen_individus_recurrents	Pour les individus réccurents, c’est un data frame où on trouve pour chaque individu, la         moyenne de son salaire (selon les différentes colonnes ) et où on prend les premières réponses pour les autres colonnes et on garde     qu’une ligne par individu
+  
+  * donnees_combinees_filtrees	C’est les donnees_combinees sur lesquelles nous avons effectué un filtrage pour enlever les lignes des     individus qui n’ont pas répondu à la question du montant de leurs rémuneration annuelle brute. Dans notre étude nous nous             intéressons particulièrement aux données liées au salaire et donc nous n’avons pas vraiment besoin des données des individus qui      n’ont pas répondu aux questions liées au salaire.
+  
+  * donnees_nettoyees_nationalite	c’est les donnees_combinees_filtrees mais en ignorant les NA dans la colonne nationalite_francaise
+  
+  
+  
+  
+  
+  

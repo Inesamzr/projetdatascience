@@ -11,7 +11,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ##Import des données 
 ```{r}
-data2018 <- read.csv("/cloud/project/data/donnees_combinees_filtrees.csv")
+donnees <- read.csv("../donnees_combinees_filtrees.csv")
 ```
 
 #ANOVA SEXE :
@@ -23,7 +23,7 @@ H1 : Il existe des différences significatives dans les salaires annuels bruts e
 
 ## Exécution de l'ANOVA
 ```{r}
-resultat_anova <- aov(remuneration_annuelle_brute ~ sexe, data = donnees_combinees_filtrees)
+resultat_anova <- aov(remuneration_annuelle_brute ~ sexe, data = donnees)
 
 # Vérification des résultats de l'ANOVA
 summary(resultat_anova)
@@ -67,7 +67,7 @@ Conclusion : les résultats du test de Tukey indiquent qu'il existe une différe
 Création d'un modèle ANOVA qui compare les moyennes de remuneration_annuelle_brute entre les différents niveaux de la variable filière.
 ```{r}
 # Exécution de l'ANOVA pour la variable filière
-resultat_anova_filiere <- aov(remuneration_annuelle_brute ~ filiere, data = donnees_combinees_filtrees)
+resultat_anova_filiere <- aov(remuneration_annuelle_brute ~ filiere, data = donnees)
 
 # Vérification des résultats de l'ANOVA pour la variable filière
 summary(resultat_anova_filiere)
@@ -133,7 +133,7 @@ MSI-app-IG
 * Pour les individus qui ont répondu par oui ou par non pour cette question : 
 ```{r}
 # Excluer les observations avec des valeurs vides dans la variable nationalite_francaise
-donnees_filtrees_sans_vide_nationalite_francaise <- donnees_combinees_filtrees[donnees_combinees_filtrees$nationalite_francaise != " ", ]
+donnees_filtrees_sans_vide_nationalite_francaise <- donnees[donnees$nationalite_francaise != " ", ]
 
 # Effectuez l'ANOVA avec la variable nationalite_francaise
 resultat_anova_nationalite_francaise <- aov(remuneration_annuelle_brute ~ nationalite_francaise, data = donnees_filtrees_sans_vide_nationalite_francaise)
@@ -161,7 +161,7 @@ Avec ces résultats, nous ne pouvons pas rejeter l'hypothèse nulle (H0) selon l
 *Pour ceux qui n'ont pas répondus à cette question, nous concidérons qu'ils sont français 
 ```{r}
 # Copiez le data frame original dans un nouveau data frame
-donnees_sansVide_nationalite <- donnees_combinees_filtrees
+donnees_sansVide_nationalite <- donnees
 
 # Remplacez les valeurs vides dans la variable "nationalite" par "française"
 donnees_sansVide_nationalite$nationalite <- ifelse(donnees_sansVide_nationalite$nationalite == " ", "française", donnees_sansVide_nationalite$nationalite)
@@ -191,7 +191,7 @@ Signif. codes : Les étoiles () indiquent le niveau de significativité. Ici, tr
 *Pour ceux qui n'ont pas répondus à cette question, nous les enlèvons de l'analyse
 ```{r}
 # Excluez les observations avec des valeurs vides dans la variable "nationalite"
-donnees_filtrees_sans_vide_nationalite <- donnees_combinees_filtrees[donnees_combinees_filtrees$nationalite != "", ]
+donnees_filtrees_sans_vide_nationalite <- donnees[donnees$nationalite != "", ]
 
 # Effectuez l'ANOVA avec la variable "nationalite"
 resultat_anova_nationalite <- aov(remuneration_annuelle_brute ~ nationalite, data = donnees_filtrees_sans_vide_nationalite)
@@ -220,13 +220,13 @@ Signif. codes : les étoiles (**) signifient une très forte significativité (p
 ##ANOVA prime
 ```{r}
 # Afficher les valeurs uniques de la variable "prime"
-unique(donnees_combinees_filtrees$prime)
+unique(donnees$prime)
 
 ```
 
 ```{r}
 # Exclure les observations avec des valeurs vides dans la variable "prime"
-donnees_filtrees_sans_vide_prime <- donnees_combinees_filtrees[donnees_combinees_filtrees$prime != " ", ]
+donnees_filtrees_sans_vide_prime <- donnees[donnees$prime != " ", ]
 
 # Effectuez l'ANOVA avec la variable "prime"
 resultat_anova_prime <- aov(remuneration_annuelle_brute ~ prime, data = donnees_filtrees_sans_vide_prime)
@@ -243,7 +243,7 @@ summary(resultat_anova_prime)
 library(lmtest)
 
 # Régression linéaire avec interaction entre sexe et filière
-modele_regression <- lm(remuneration_annuelle_brute ~ sexe * filiere, data = donnees_combinees_filtrees)
+modele_regression <- lm(remuneration_annuelle_brute ~ sexe * filiere, data = donnees)
 
 # Afficher le résumé du modèle
 summary(modele_regression)
@@ -276,13 +276,13 @@ library(stats)
 library(multcomp)
 
 # Préparation des données
-donnees_combinees_filtrees <- donnees_combinees_filtrees %>%
+donnees <- donnees %>%
   mutate(sexe = as.factor(sexe),
          filiere = as.factor(filiere),
          remuneration_annuelle_brute = as.numeric(remuneration_annuelle_brute))
 
 # Réalisation de l'ANOVA
-modele_anova <- aov(remuneration_annuelle_brute ~ sexe * filiere, data = donnees_combinees_filtrees)
+modele_anova <- aov(remuneration_annuelle_brute ~ sexe * filiere, data = donnees)
 anova_resultat <- summary(modele_anova)
 
 # Affichage du résultat de l'ANOVA
@@ -304,18 +304,18 @@ L'absence d'effet significatif de l'interaction indique que l'influence du sexe 
 
 
 
-<!-- #ANOVA à 2 variables : Sexe/Nationalité -->
+#ANOVA à 2 variables : Sexe/Nationalité
 ```{r}
 # Chargement des packages nécessaires
 if (!require(stats)) install.packages("stats")
 library(stats)
 
 # Préparation des données (conversion en facteurs si nécessaire)
-donnees_combinees_filtrees$sexe <- as.factor(donnees_combinees_filtrees$sexe)
-donnees_combinees_filtrees$nationalite <- as.factor(donnees_combinees_filtrees$nationalite)
+donnees$sexe <- as.factor(donnees$sexe)
+donnees$nationalite <- as.factor(donnees$nationalite)
 
 # Réalisation de l'ANOVA à deux facteurs
-modele_anova <- aov(remuneration_annuelle_brute ~ sexe * nationalite, data = donnees_combinees_filtrees)
+modele_anova <- aov(remuneration_annuelle_brute ~ sexe * nationalite, data = donnees)
 
 # Affichage du résumé du modèle ANOVA
 summary(modele_anova)
