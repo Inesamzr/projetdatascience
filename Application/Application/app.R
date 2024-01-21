@@ -115,218 +115,306 @@ merged_data$taille_combined[merged_data$taille_entreprise %in% c("De 50 ‡ 249 
 
 merged_data$region_combined <- na.omit(merged_data$region_combined)
 
+library(shiny)
+library(shinydashboard)
+library(shinythemes)
 
 ui <- fluidPage(
+  theme = shinytheme("cerulean"), # Utilisation d'un thème prédéfini
+
+  # Style personnalisé pour l'ensemble de l'application
+  tags$head(
+    tags$style(
+      HTML(
+        "
+        body {
+          background-color: #323B60; /* Couleur de fond */
+          color: black; /* Couleur du texte */
+        }
+        "
+      )
+    )
+  ),
 
   titlePanel("Analyses Formation App"),
 
   tabsetPanel(
-
-    tabPanel("Histogrammes",
-             h3("Histogrammes"),
-
-             h4("Répartition des salaires par filière"),
-             plotOutput("histogram_filiere"),
-
-             h4("Répartition des salaires par type de formation"),
-             plotOutput("histogram_typeformation"),
-
-             h4("Répartition des salaires par date d'obtention du diplôme"),
-             plotOutput("histogram_datediplome")
-
-    ),
-
-    tabPanel("Filieres",
-             h4("Diagrammes de boîte (box plots) et diagrammes de dispersion"),
-             sidebarLayout(
-               sidebarPanel(
-                 checkboxGroupInput("filieres", "Sélectionner des filières", choices = c("MEA","SE","EnR","MSI", "IG", "MAT", "MI", "GBA","STE", "EGC"), selected = c("MEA","SE","EnR","MSI", "IG", "MAT", "MI", "GBA","STE", "EGC")),
-                 checkboxGroupInput("sexe", "Sélectionner le sexe", choices = c("Homme","Femme"), selected = c("Homme", "Femme"))
-               ),
-               mainPanel(
-                 plotOutput("boxplot_filiere"),
-                 plotOutput("boxplot_unique_filiere")
-
-               )
-             )
-    ),
-    tabPanel("Type de Formation",
-             h4("Diagrammes de boîte (box plots) et diagrammes de dispersion"),
-             sidebarLayout(
-               sidebarPanel(
-                 checkboxGroupInput("typesformation", "Sélectionner des types de formation", choices = c("Formation initiale (hors apprentissage)","Sous contrat d'apprentissage","Sous contrat de professionalisation"), selected = c("Formation initiale (hors apprentissage)","Sous contrat d'apprentissage","Sous contrat de professionalisation")),
-                 checkboxGroupInput("sexes", "Sélectionner le sexe", choices = c("Homme","Femme"), selected = c("Homme", "Femme"))
-               ),
-               mainPanel(
-                 plotOutput("boxplot_typeformation"),
-                 plotOutput("boxplot_unique_typeformation")
-
-               )
-             )
-    ),
-    tabPanel("Obtention diplome",
-             h4("Diagrammes de boîte (box plots) et diagrammes de dispersion"),
-             sidebarLayout(
-               sidebarPanel(
-                 checkboxGroupInput("datediplome", "Sélectionner des types de formation", choices = c("2015","2016","2017","2018","2019","2020","2021","2022"), selected = c("2015","2016","2017","2018","2019","2020","2021","2022")),
-                 checkboxGroupInput("sexess", "Sélectionner le sexe", choices = c("Homme","Femme"), selected = c("Homme", "Femme"))
-               ),
-               mainPanel(
-                 plotOutput("boxplot_datediplome")
-               )
-
-               ),
+    # Onglet Distribution Générale
+    tabPanel("Distribution Générale",
              tabsetPanel(
-               tabPanel("Boxplot par Filière", plotOutput("boxplot_unique_datediplome")),
+               # Onglet Histogrammes
+               tabPanel("Histogrammes",
+                        h3("Histogrammes"),
+
+                        h4("Répartition des salaires par filière"),
+                        plotOutput("histogram_filiere"),
+
+                        h4("Répartition des salaires par type de formation"),
+                        plotOutput("histogram_typeformation"),
+
+                        h4("Répartition des salaires par date d'obtention du diplôme"),
+                        plotOutput("histogram_datediplome")
+               )
              )
     ),
-    tabPanel("Analyse des Moyennes par Groupe",
-             sidebarLayout(
-               sidebarPanel(
-                 checkboxGroupInput("filieress", "Sélectionnez une filière", choices = c("MEA","SE","EnR","MSI", "IG", "MAT", "MI", "GBA","STE", "EGC")),
-                 checkboxGroupInput("type_formationss", "Sélectionnez un type de formation", choices = c("Formation initiale (hors apprentissage)","Sous contrat d'apprentissage","Sous contrat de professionalisation")),
-                 checkboxGroupInput("date_diplomess", "Sélectionnez une date de diplomation", choices = c("2015","2016","2017","2018","2019","2020","2021","2022"))
-               ),
-               mainPanel(
-                 plotOutput("moyennes_plot")
-               )
-             ),
-    ),
 
-    tabPanel("Analyse Secteur d'activité Salaire Premier Emploi",
-             sidebarLayout(
-               sidebarPanel(
-             checkboxGroupInput("genderInput", "Sélectionnez le sexe:",
-                                choices = c("Homme", "Femme"), selected = "Homme"),
-             checkboxGroupInput("sectorInput", "Sélectionnez le secteur d'activité:",
-                                choices = unique(data1$secteur_premiere_entreprise), selected = unique(data1$secteur_premiere_entreprise)),
-              ),
-             mainPanel(
-             plotOutput("plot1"))
-             ),
-    ),
-    tabPanel("Analyse Localisation géographique Salaire Premier Emploi",
-             sidebarLayout(
-               sidebarPanel(
-             checkboxGroupInput("localisationInput", "Sélectionnez la localisation:",
-                                choices = unique(data2$localisation_premier_emploi), selected = unique(data2$localisation_premier_emploi)),
-             checkboxGroupInput("countryInput", "Sélectionnez le pays:",
-                                choices = unique(data2$pays_premier_emploi), selected = unique(data2$pays_premier_emploi)),
+    # Onglet Formation
+    tabPanel("Formation",
+             tabsetPanel(
+               # Onglet Filière
+               tabPanel("Filière",
+                        h4("Diagrammes de boîte (box plots) et diagrammes de dispersion"),
+                        sidebarLayout(
+                          sidebarPanel(
+                            checkboxGroupInput("filieres", "Sélectionner des filières", choices = c("MEA","SE","EnR","MSI", "IG", "MAT", "MI", "GBA","STE", "EGC"), selected = c("MEA","SE","EnR","MSI", "IG", "MAT", "MI", "GBA","STE", "EGC")),
+                            checkboxGroupInput("sexe", "Sélectionner le sexe", choices = c("Homme","Femme"), selected = c("Homme", "Femme"))
+                          ),
+                          mainPanel(
+
+                            h4("Variation de la rémunération Prime pour les filières sélectionnées"),
+                            plotOutput("boxplot_filiere"),
+                            br(), # Espace vertical
+                            h4("Variation de la rémunération Prime pour les filières"),
+                            plotOutput("boxplot_unique_filiere")
+                          )
+                        )
                ),
-             mainPanel(
-             plotOutput("plot2"))
-             ),
-    ),
-    tabPanel("Filière et Date de Diplôme Salaire Premier Emploi",
-             sidebarLayout(
-               sidebarPanel(
-             checkboxGroupInput("filiereInput", "Sélectionnez la filière:",
-                                choices = unique(data3$filiere), selected = unique(data3$filiere)),
-             checkboxGroupInput("dateDiplomeInput", "Sélectionnez la date de diplôme:",
-                                choices = unique(data3$date_diplome), selected = unique(data3$date_diplome)),
+
+               # Onglet Type de Formation
+               tabPanel("Type de Formation",
+                        h4("Diagrammes de boîte (box plots) et diagrammes de dispersion"),
+                        sidebarLayout(
+                          sidebarPanel(
+                            checkboxGroupInput("typesformation", "Sélectionner des types de formation", choices = c("Formation initiale (hors apprentissage)","Sous contrat d'apprentissage","Sous contrat de professionalisation"), selected = c("Formation initiale (hors apprentissage)","Sous contrat d'apprentissage","Sous contrat de professionalisation")),
+                            checkboxGroupInput("sexes", "Sélectionner le sexe", choices = c("Homme","Femme"), selected = c("Homme", "Femme"))
+                          ),
+                          mainPanel(
+                            h4("Variation de la rémunération Prime par type de formation"),
+                            plotOutput("boxplot_typeformation"),
+                            br(),
+                            h4("Boxplot par type de formation"),
+                            plotOutput("boxplot_unique_typeformation")
+                          )
+                        )
                ),
-             mainPanel(
-             plotOutput("plot3"))
+
+               # Onglet Obtention diplôme
+               tabPanel("Obtention diplome",
+                        h4("Diagrammes de boîte (box plots) et diagrammes de dispersion"),
+                        sidebarLayout(
+                          sidebarPanel(
+                            checkboxGroupInput("datediplome", "Sélectionner des types de formation", choices = c("2015","2016","2017","2018","2019","2020","2021","2022"), selected = c("2015","2016","2017","2018","2019","2020","2021","2022")),
+                            checkboxGroupInput("sexess", "Sélectionner le sexe", choices = c("Homme","Femme"), selected = c("Homme", "Femme"))
+                          ),
+                          mainPanel(
+                            h4("Variation de la rémunération Prime par date d'obtention du diplôme"),
+                            plotOutput("boxplot_datediplome")
+                          )
+                        ),
+                        tabsetPanel(
+                          h4("Boxplot par date d'obtention du diplôme"),
+                          tabPanel("Boxplot par Filière", plotOutput("boxplot_unique_datediplome"))
+                        )
+               ),
+
+               # Onglet Analyse des Moyennes par Groupe
+               tabPanel("Analyse des Moyennes par Groupe",
+                        sidebarLayout(
+                          sidebarPanel(
+                            checkboxGroupInput("filieress", "Sélectionnez une filière", choices = c("MEA","SE","EnR","MSI", "IG", "MAT", "MI", "GBA","STE", "EGC")),
+                            checkboxGroupInput("type_formationss", "Sélectionnez un type de formation", choices = c("Formation initiale (hors apprentissage)","Sous contrat d'apprentissage","Sous contrat de professionalisation")),
+                            checkboxGroupInput("date_diplomess", "Sélectionnez une date de diplomation", choices = c("2015","2016","2017","2018","2019","2020","2021","2022"))
+                          ),
+                          mainPanel(
+                            h4("Moyennes par Groupe"),
+                            plotOutput("moyennes_plot")
+                          )
+                        )
+               )
              )
     ),
-    tabPanel("Genre",
-             h3("Genre"),
-                h4("Distribution des réponses"),
-                plotOutput("camembert_reponses"),
 
-                h4("Distribution des réponses par genre par filière"),
-                plotOutput("diagramme_empile_GF"),
+    # Onglet Temporalité
+    tabPanel("Temporalité",
+             tabsetPanel(
+               # Onglet Analyse Secteur d'activité Salaire Premier Emploi
+               tabPanel("Analyse Secteur d'activité Salaire Premier Emploi",
+                        sidebarLayout(
+                          sidebarPanel(
+                            checkboxGroupInput("genderInput", "Sélectionnez le sexe:",
+                                               choices = c("Homme", "Femme"), selected = "Homme"),
+                            checkboxGroupInput("sectorInput", "Sélectionnez le secteur d'activité:",
+                                               choices = unique(data1$secteur_premiere_entreprise), selected = unique(data1$secteur_premiere_entreprise)),
+                          ),
+                          mainPanel(
+                            h4("Rémunération Premier Emploi en fonction du secteur d'activité"),
+                            plotOutput("plot1")
+                          )
+                        )
+               ),
 
-                h4("Rémunération annuelle brute par genre"),
-                plotOutput("boxplots_Genre")
+               # Onglet Analyse Localisation géographique Salaire Premier Emploi
+               tabPanel("Analyse Localisation géographique Salaire Premier Emploi",
+                        sidebarLayout(
+                          sidebarPanel(
+                            checkboxGroupInput("localisationInput", "Sélectionnez la localisation:",
+                                               choices = unique(data2$localisation_premier_emploi), selected = unique(data2$localisation_premier_emploi)),
+                            checkboxGroupInput("countryInput", "Sélectionnez le pays:",
+                                               choices = unique(data2$pays_premier_emploi), selected = unique(data2$pays_premier_emploi)),
+                          ),
+                          mainPanel(
+                            h4("Rémunération Premier Emploi en fonction de la localisation géographique"),
+                            plotOutput("plot2")
+                          )
+                        )
+               ),
 
-    ),
-    tabPanel("Rémunération Annuelle Brute par Filière",
-             h4("Diagrammes de boîtes par Filière"),
-             plotOutput("boxplot_remuneration_filière")
-    ),
-    tabPanel("Nationalité",
-             h3("Nationalité"),
-                h4("Distribution des réponses des français par rapport aux étrangers"),
-                plotOutput("camembert_nationalite"),
-
-    ),
-
-      tabPanel("Région entreprise",
-               sidebarLayout(
-                 sidebarPanel(
-                   # Cases à cocher pour choisir la région
-                   checkboxGroupInput("regions", "Sélectionner des régions", choices = unique(merged_data$region_combined)),
-                   # Cases à cocher pour choisir le sexe
-                   checkboxGroupInput("sexe_region", "Sélectionner le sexe", choices = c("Homme", "Femme"))
-                 ),
-                 mainPanel(
-                   # Affichage du boxplot
-                   plotOutput("boxplot1"),
-                   plotOutput("barplot_region")
-                 )
+               # Onglet Filière et Date de Diplôme Salaire Premier Emploi
+               tabPanel("Filière et Date de Diplôme Salaire Premier Emploi",
+                        sidebarLayout(
+                          sidebarPanel(
+                            checkboxGroupInput("filiereInput", "Sélectionnez la filière:",
+                                               choices = unique(data3$filiere), selected = unique(data3$filiere)),
+                            checkboxGroupInput("dateDiplomeInput", "Sélectionnez la date de diplôme:",
+                                               choices = unique(data3$date_diplome), selected = unique(data3$date_diplome)),
+                          ),
+                          mainPanel(
+                            h4("Rémunération Premier Emploi en fonction de la Filière et de la Date de Diplôme"),
+                            plotOutput("plot3")
+                          )
+                        )
                )
+             )
     ),
-      # Deuxième onglet
-      tabPanel("Taille entreprise",
-               sidebarLayout(
-                 sidebarPanel(
-                   # Cases à cocher pour choisir la région
-                   checkboxGroupInput("regions_t", "Sélectionner des régions", choices = unique(merged_data$region_combined)),
-                   # Cases à cocher pour choisir le sexe
-                   # Cases à cocher pour choisir la taille de l'entreprise
-                   checkboxGroupInput("taille", "Sélectionner la taille de l'entreprise", choices = unique(merged_data$taille_combined))
-                 ),
-                 mainPanel(
-                   # Affichage du boxplot
-                   plotOutput("boxplot_taille")
-                 )
-               )
-      ),
-      tabPanel("Satisfaction Emploi",
-               sidebarLayout(
-                 sidebarPanel(
-                   # Filtres pour l'analyse de la satisfaction des employés
-                   checkboxGroupInput("satisfaction_sexe", "Sélectionner le sexe", choices = c("Homme", "Femme")),
-                   sliderInput("satisfaction_remuneration", "Filtrer par rémunération", min = 25000, max = 70000, value = c(25000, 70000)),
-                   # ... Ajoutez d'autres filtres selon vos besoins
-                 ),
-                 mainPanel(
-                   plotOutput("satisfaction_plot1"),
-                   plotOutput("satisfaction_plot2")
-                 )
-               )
-      )
 
+    # Onglet Inégalités
+    tabPanel("Inégalités",
+             tabsetPanel(
+               # Onglet Genre
+               tabPanel("Genre",
+                        h3("Genre"),
+                        h4("Distribution des réponses"),
+                        plotOutput("camembert_reponses"),
 
+                        h4("Distribution des réponses par genre par filière"),
+                        plotOutput("diagramme_empile_GF"),
+
+                        h4("Rémunération annuelle brute par genre"),
+                        plotOutput("boxplots_Genre")
+               ),
+
+               # Onglet Rémunération Annuelle Brute par Filière
+               tabPanel("Rémunération Annuelle Brute par Filière",
+                        h4("Diagrammes de boîtes par Filière"),
+                        plotOutput("boxplot_remuneration_filière")
+               ),
+
+               # Onglet Nationalité
+               tabPanel("Nationalité",
+                        h3("Nationalité"),
+                        h4("Distribution des réponses des français par rapport aux étrangers"),
+                        plotOutput("camembert_nationalite")
+               )
+             )
+    ),
+
+    # Onglet Global Entreprise
+    tabPanel("Global Entreprise",
+             tabsetPanel(
+               # Onglet Taille entreprise
+               tabPanel("Taille entreprise",
+                        sidebarLayout(
+                          sidebarPanel(
+                            checkboxGroupInput("regions_t", "Sélectionner des régions", choices = unique(merged_data$region_combined)),
+                            checkboxGroupInput("taille", "Sélectionner la taille de l'entreprise", choices = unique(merged_data$taille_combined))
+                          ),
+                          mainPanel(
+                            h4("Variation de la rémunération Prime pour les régions sélectionnées taille d'entreprise sélectionnée"),
+                            plotOutput("boxplot_taille")
+                          )
+                        )
+               ),
+
+               # Onglet Région entreprise
+               tabPanel("Région entreprise",
+                        sidebarLayout(
+                          sidebarPanel(
+                            checkboxGroupInput("regions", "Sélectionner des régions", choices = unique(merged_data$region_combined)),
+                            checkboxGroupInput("sexe_region", "Sélectionner le sexe", choices = c("Homme", "Femme"))
+                          ),
+                          mainPanel(
+                            h4("Variation de la rémunération Prime pour les régions sélectionnées par sexe"),
+                            plotOutput("boxplot1"),
+                            br(),
+                            br(),
+                            h4("Moyenne de la rémunération Prime par région de l'emploi"),
+                            plotOutput("barplot_region")
+                          )
+                        )
+               ),
+
+               # Onglet Satisfaction Emploi
+               tabPanel("Satisfaction Emploi",
+                        sidebarLayout(
+                          sidebarPanel(
+                            checkboxGroupInput("satisfaction_sexe", "Sélectionner le sexe", choices = c("Homme", "Femme")),
+                            sliderInput("satisfaction_remuneration", "Filtrer par rémunération", min = 25000, max = 70000, value = c(25000, 70000)),
+                            # ... Ajoutez d'autres filtres selon vos besoins
+                          ),
+                          mainPanel(
+                            h4("Variation de la rémunération Prime par niveau de satisfaction"),
+                            plotOutput("satisfaction_plot1"),
+                            br(),
+                            br(),
+                            h4("Moyenne de la rémunération Prime par niveau de satisfaction"),
+                            plotOutput("satisfaction_plot2")
+                          )
+                        )
+               )
+             )
     )
+  )
 )
+
 
 server <- function(input, output) {
 
   output$histogram_filiere <- renderPlot({
-
-
     histogram3 <- ggplot(data, aes(x = filiere_combined2, y = remuneration_prime, fill = filiere_combined2)) +
       geom_bar(stat = "identity", position = "dodge", alpha = 0.7) +
-      labs(title = "Répartition des salaires par filière",
+      labs(
            x = "Filière",
            y = "Rémunération Prime") +
       scale_fill_brewer(palette = "Paired") +
-      theme_minimal()
+      theme_minimal() +
+      theme(
+        text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+        axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+        axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+        plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+        panel.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan du panneau sur transparent
+      )
     print(histogram3)
   })
+
 
   output$histogram_typeformation <- renderPlot({
 
 
     histogram <- ggplot(filtered_data, aes(x = type_combined, y = remuneration_prime, fill = type_combined)) +
       geom_bar(stat = "identity", position = "dodge", alpha = 0.7) +
-      labs(title = "Répartition des salaires par type de formation",
+      labs(
            x = "Type de Formation",
            y = "Rémunération Prime") +
       scale_fill_brewer(palette = "Set2") +
-      theme_minimal()
+      theme_minimal()+
+      theme(
+        text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+        axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+        axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+        plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+        panel.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan du panneau sur transparent
+      )
     print(histogram)
   })
 
@@ -335,11 +423,18 @@ server <- function(input, output) {
   output$histogram_datediplome <- renderPlot({
     histogram2 <- ggplot(subset(data, date_diplome != "721"), aes(x = date_diplome, y = remuneration_prime, fill = date_diplome)) +
       geom_col(alpha = 0.7) +
-      labs(title = "Répartition des salaires par date d'obtention du diplôme",
+      labs(
            x = "Date d'obtention du diplôme",
            y = "Rémunération Prime") +
       scale_fill_brewer(palette = "Set2") +
-      theme_minimal()
+      theme_minimal()+
+      theme(
+        text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+        axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+        axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+        plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+        panel.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan du panneau sur transparent
+      )
 
     print(histogram2)
   })
@@ -347,30 +442,51 @@ server <- function(input, output) {
   output$boxplot_unique_filiere <- renderPlot({
     ggplot(filtered_data2, aes(x = factor(filiere_combined2), y = remuneration_prime)) +
       geom_boxplot(width = 0.6) +
-      labs(title = "Boxplot par filière",
+      labs(
            x = "Filière",
            y = "Rémunération Prime") +
-      theme_minimal()
+      theme_minimal()+
+      theme(
+        text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+        axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+        axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+        plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+        panel.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan du panneau sur transparent
+      )
   })
 
   # Boxplot pour type_combined
   output$boxplot_unique_typeformation <- renderPlot({
     ggplot(filtered_data, aes(x = factor(type_combined), y = remuneration_prime)) +
       geom_boxplot(width = 0.6) +
-      labs(title = "Boxplot par type de formation",
+      labs(
            x = "Type de Formation",
            y = "Rémunération Prime") +
-      theme_minimal()
+      theme_minimal()+
+      theme(
+        text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+        axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+        axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+        plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+        panel.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan du panneau sur transparent
+      )
   })
 
   # Boxplot pour date_diplome
   output$boxplot_unique_datediplome <- renderPlot({
     ggplot(subset(data, date_diplome != "721"), aes(x = date_diplome, y = remuneration_prime)) +
       geom_boxplot(width = 0.7) +
-      labs(title = "Boxplot par date d'obtention du diplôme",
+      labs(
            x = "Date d'obtention du diplôme",
            y = "Rémunération Prime") +
-      theme_minimal()
+      theme_minimal()+
+      theme(
+        text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+        axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+        axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+        plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+        panel.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan du panneau sur transparent
+      )
   })
 
 
@@ -379,11 +495,15 @@ server <- function(input, output) {
       geom_bar(position = "fill") +
       scale_y_continuous(labels = scales::percent) +
       scale_fill_manual(values = c("Homme" = "#4477AA", "Femme" = "#EE6677", "Ne souhaite pas répondre" = "grey50")) +
-      labs(x = "Filière", y = "Pourcentage", fill = "Sexe",
-           title = "Répartition par Sexe au sein de chaque Filière") +
+      labs(x = "Filière", y = "Pourcentage", fill = "Sexe") +
       theme_minimal() +
-      theme(axis.text.x = element_text(angle = 90, vjust = 0.5))
-
+      theme(text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+            axis.text = element_text(color = "white"),
+            axis.text.x = element_text(angle = 90, vjust = 0.5),# Définir la couleur du texte des graduations sur blanc
+            axis.title = element_text(color = "white") ,  # Définir la couleur du texte du titre d'axe sur blanc
+            plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+            panel.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan du panneau sur transparent
+            )
   })
 
   output$camembert_reponses <- renderPlot({
@@ -402,7 +522,14 @@ server <- function(input, output) {
                                    "Ne souhaite pas répondre" = "grey50")) +
       labs(title = "Répartition des Réponses par Genre",
            fill = "Sexe") +
-      theme(legend.title = element_blank())
+      theme(legend.title = element_blank(),
+                text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+                axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+                axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+                plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+                panel.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan du panneau sur transparent
+
+            )
 
   })
 
@@ -421,7 +548,13 @@ server <- function(input, output) {
            title = "Proportion des Répondants par Statut de Nationalité Française") +
       scale_fill_brewer(palette = "Set1") +
       theme_void() +
-      theme(legend.title = element_blank(), legend.position = "bottom")
+      theme(legend.title = element_blank(), legend.position = "bottom",
+                text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+                axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+                axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+                plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+                panel.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan du panneau sur transparent
+              )
 
   })
 
@@ -443,13 +576,26 @@ server <- function(input, output) {
     # Créer le boxplot de base sans outliers
     base_plot <- ggplot(data_axe1, aes(x = sexe, y = remuneration_annuelle_brute)) +
       geom_boxplot(outlier.shape = NA) +  # Suppression des outliers dans cette couche
-      labs(title = "Salaires par Genre", x = "Sexe", y = "Salaire Annuel Brut")
+      labs(title = "Salaires par Genre", x = "Sexe", y = "Salaire Annuel Brut")+
+      theme(
+        text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+        axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+        axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+        plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+        panel.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan du panneau sur transparent
+      )
 
     # Ajouter les outliers avec des couleurs spécifiques pour chaque sexe
     final_plot <- base_plot +
       geom_point(data = outliers, aes(x = sexe, y = remuneration_annuelle_brute, colour = sexe), shape = 1) +
       scale_colour_manual(values = c("Homme" = "blue", "Femme" = "red", "Ne souhaite pas répondre" = "grey")) +
-      theme(legend.position = "none")  # Cache la légende
+      theme(legend.position = "none",
+                text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+                axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+                axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+                plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+                panel.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan du panneau sur transparent
+              )  # Cache la légende
 
     # Afficher le graphique final
     print(final_plot)
@@ -465,10 +611,16 @@ server <- function(input, output) {
     ggplot(filtered_data3, aes(x = factor(filiere_combined2), y = remuneration_prime, fill = factor(sexe))) +
       geom_boxplot(width = 0.6) +
       labs(x = "Filière", y = "Rémunération Prime") +
-      ggtitle(paste("Variation de la rémunération Prime pour les filières sélectionnées")) +
       theme_minimal() +
-      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-  }, height = 600, width = 1200)
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+                text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+                axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+                axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+                plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+                panel.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan du panneau sur transparent
+
+      )
+  })
 
   output$boxplot_typeformation <- renderPlot({
     filtered_data4 <- data[!is.na(data$remuneration_prime) &
@@ -478,10 +630,16 @@ server <- function(input, output) {
     ggplot(filtered_data4, aes(x = factor(type_combined), y = remuneration_prime, fill = factor(sexe))) +
       geom_boxplot(width = 0.6) +
       labs(x = "Type de Formation", y = "Rémunération Prime") +
-      ggtitle(paste("Variation de la rémunération Prime par type de formation")) +
       theme_minimal() +
-      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-  }, height = 600, width = 1200)
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+                text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+                axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+                axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+                plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+                panel.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan du panneau sur transparent
+
+      )
+  })
 
   output$boxplot_datediplome <- renderPlot({
     filtered_data5 <- data[!is.na(data$remuneration_prime) &
@@ -493,10 +651,15 @@ server <- function(input, output) {
     ggplot(filtered_data5, aes(x = factor(date_diplome), y = remuneration_prime, fill = factor(sexe))) +
       geom_boxplot(width = 0.6) +
       labs(x = "Date d'obtention du diplôme", y = "Rémunération Prime") +
-      ggtitle("Variation de la rémunération Prime par date d'obtention du diplôme") +
       theme_minimal() +
-      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
-  }, height = 600, width = 1200)
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+                text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+                axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+                axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+                plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+                panel.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan du panneau sur transparent
+              )
+  })
 
   filtered_data_moyenne <- reactive({
     filter_data_moyenne <- moyennes_par_groupe
@@ -515,11 +678,18 @@ server <- function(input, output) {
   output$moyennes_plot <- renderPlot({
     ggplot(filtered_data_moyenne(), aes(x = factor(filiere_combined2), y = moyenne_remuneration, fill = factor(type_combined), fill = factor(date_diplome))) +
       geom_bar(stat = "identity", position = "dodge") +
-      labs(title = "Moyennes par Groupe",
+      labs(
            x = "Filière",
            y = "Moyenne de Rémunération") +
       scale_fill_brewer(palette = "Set2") +
-      theme_minimal()
+      theme_minimal()+
+      theme(
+        text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+        axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+        axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+        plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+        panel.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan du panneau sur transparent
+      )
   })
 
   output$boxplot_remuneration_filière <- renderPlot({
@@ -532,7 +702,13 @@ server <- function(input, output) {
            x = "Filière",
            y = "Rémunération Annuelle Brute") +
       theme_minimal() +
-      theme(legend.position = "none")
+      theme(legend.position = "none",
+                text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+                axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+                axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+                plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+                panel.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan du panneau sur transparent
+            )
 
   })
 
@@ -562,11 +738,17 @@ server <- function(input, output) {
 
     ggplot(data1, aes(x = secteur_premiere_entreprise, y = remuneration_annuelle_brute_avec_prime_premier_emploi, fill = sexe)) +
       geom_bar(stat = "identity", position = position_dodge(width = 0), width = 0.8) +
-      labs(title = "Rémunération Premier Emploi en fonction du secteur d'activité",
+      labs(
            x = "Secteur",
            y = "Rémunération moyenne") +
       theme_minimal() +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+      theme(axis.text.x = element_text(angle = 45, hjust = 1),
+                text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+                axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+                axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+                plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+                panel.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan du panneau sur transparent
+              )
   })
 
   # Diagramme 2 - Rémunération en fonction de la localisation géographique
@@ -583,10 +765,17 @@ server <- function(input, output) {
 
     ggplot(data2_filtered, aes(x = localisation_premier_emploi, y = remuneration_annuelle_brute_avec_prime_premier_emploi, fill = pays_premier_emploi)) +
       geom_bar(stat = "identity", position = "dodge") +
-      labs(title = "Rémunération Premier Emploi en fonction de la localisation géographique",
+      labs(
            x = "Localisation",
            y = "Rémunération moyenne") +
-      theme_minimal()
+      theme_minimal()+
+      theme(
+        text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+        axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+        axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+        plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+        panel.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan du panneau sur transparent
+      )
   })
 
 
@@ -627,12 +816,18 @@ server <- function(input, output) {
 
     ggplot(data3_filtered, aes(x = filiere, y = remuneration_annuelle_brute_avec_prime_premier_emploi, color = date_diplome)) +
       geom_point() +
-      labs(title = "Rémunération Premier Emploi en fonction de la Filière et de la Date de Diplôme",
+      labs(
            x = "Filière",
            y = "Rémunération Annuelle Brute",
            color = "Date de Diplôme") +
       theme_minimal() +
-      theme(axis.text.x = element_text(angle = 45, hjust = 1))
+      theme(axis.text.x = element_text(angle = 45, hjust = 1),
+                text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+                axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+                axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+                plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+                panel.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan du panneau sur transparent
+              )
   })
 
   observeEvent(input$selectAll3, {
@@ -668,8 +863,16 @@ server <- function(input, output) {
     ggplot(filtered_data, aes(x = factor(region_combined), y = remuneration_prime, fill = factor(sexe))) +
       geom_boxplot() +
       labs(x = "Région emploi", y = "Rémunération Prime") +
-      ggtitle("Variation de la rémunération Prime pour les régions sélectionnées par sexe") +
-      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+      theme(
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+        text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+        axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+        axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+        plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+        panel.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du panneau sur transparent
+        legend.text = element_text(color = "white"),  # Définir la couleur du texte de la légende sur blanc
+        legend.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan de la légende sur transparent
+      )
   })
 
   output$boxplot_taille <- renderPlot({
@@ -685,8 +888,16 @@ server <- function(input, output) {
     ggplot(filtered_data2, aes(x = factor(region_combined), y = remuneration_prime, fill = factor(taille_combined))) +
       geom_boxplot() +
       labs(x = "Région emploi", y = "Rémunération Prime") +
-      ggtitle("Variation de la rémunération Prime pour les régions sélectionnées par sexe et taille d'entreprise") +
-      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+      theme(
+        axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+        text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+        axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+        axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+        plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+        panel.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du panneau sur transparent
+        legend.text = element_text(color = "white"),  # Définir la couleur du texte de la légende sur blanc
+        legend.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan de la légende sur transparent
+      )
   })
 
   # Nouvelle sortie pour le graphique en barres
@@ -701,10 +912,15 @@ server <- function(input, output) {
     ggplot(filtered_data_region, aes(x = factor(region_combined), y = remuneration_prime, fill = factor(region_combined))) +
       stat_summary(fun=mean, geom="bar", position="dodge", width=0.7, color="black", size=0.7) +  # Ajouter la barre de moyenne
       labs(x = "Région emploi", y = "Rémunération Prime") +
-      ggtitle("Moyenne de la rémunération Prime par région de l'emploi (sans NA)") +
       scale_fill_discrete() +  # Utiliser des couleurs différentes
       theme_minimal() +
-      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1))
+      theme(axis.text.x = element_text(angle = 90, vjust = 0.5, hjust = 1),
+                text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+                axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+                axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+                plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+                panel.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan du panneau sur transparent
+              )
   })
 
   output$satisfaction_plot1 <- renderPlot({
@@ -720,7 +936,14 @@ server <- function(input, output) {
     ggplot(filtered_satisfaction_data, aes(x = factor(filtered_satisfaction_data$satisfaction_emploi), y = filtered_satisfaction_data$remuneration_prime)) +
       geom_boxplot() +
       labs(x = "Niveau de satisfaction", y = "Rémunération Prime") +
-      ggtitle("Variation de la rémunération Prime par niveau de satisfaction")
+      theme_minimal()+
+      theme(
+        text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+        axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+        axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+        plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+        panel.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan du panneau sur transparent
+      )
   })
 
   output$satisfaction_plot2 <- renderPlot({
@@ -736,11 +959,16 @@ server <- function(input, output) {
     print(mean_satisfaction_by_level)
 
     ggplot(mean_satisfaction_by_level, aes(x = satisfaction_emploi, y = remuneration_prime)) +
-      geom_line(color = "blue", size = 1) +
+      geom_line(color = "#EE6677", size = 1) +
       labs(x = "Niveau de satisfaction", y = "Moyenne de la rémunération Prime") +
-      ggtitle("Moyenne de la rémunération Prime par niveau de satisfaction") +
       theme_minimal() +
-      theme(axis.text.x = element_text(vjust = 0.5, hjust = 1))
+      theme(axis.text.x = element_text(vjust = 0.5, hjust = 1),
+                text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+                axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+                axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+                plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+                panel.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan du panneau sur transparent
+              )
   })
 
   boxplotFiliereGenre <- function(data) {
@@ -752,7 +980,13 @@ server <- function(input, output) {
            x = "Filière",
            y = "Rémunération Annuelle Brute") +
       theme_minimal() +
-      theme(legend.position = "bottom") +
+      theme(legend.position = "bottom",
+                text = element_text(color = "white"),  # Définir la couleur du texte sur blanc
+                axis.text = element_text(color = "white"),  # Définir la couleur du texte des graduations sur blanc
+                axis.title = element_text(color = "white"),  # Définir la couleur du texte du titre d'axe sur blanc
+                plot.background = element_rect(fill = "#323B60"),  # Définir l'arrière-plan du graphique sur transparent
+                panel.background = element_rect(fill = "#323B60")  # Définir l'arrière-plan du panneau sur transparent
+              ) +
       scale_y_continuous(breaks = seq(0, 100000, by = 10000), labels = scales::comma, limits = c(0, 100000))
   }
 
