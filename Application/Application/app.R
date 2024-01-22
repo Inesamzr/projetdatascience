@@ -325,8 +325,12 @@ ui <- fluidPage(
                tabPanel("Taille entreprise",
                         sidebarLayout(
                           sidebarPanel(
-                            checkboxGroupInput("regions_t", "Sélectionner des régions", choices = unique(merged_data$region_combined)),
-                            checkboxGroupInput("taille", "Sélectionner la taille de l'entreprise", choices = unique(merged_data$taille_combined))
+                            checkboxGroupInput("regions_t", "Sélectionner des régions", 
+                                               choices = unique(merged_data$region_combined),
+                                               selected = unique(merged_data$region_combined)),
+                            checkboxGroupInput("taille", "Sélectionner la taille de l'entreprise", 
+                                               choices = unique(merged_data$taille_combined),
+                                               selected = unique(merged_data$taille_combined))
                           ),
                           mainPanel(
                             h4("Variation de la rémunération Prime pour les régions sélectionnées taille d'entreprise sélectionnée"),
@@ -334,13 +338,17 @@ ui <- fluidPage(
                           )
                         )
                ),
-
+               
                # Onglet Région entreprise
                tabPanel("Région entreprise",
                         sidebarLayout(
                           sidebarPanel(
-                            checkboxGroupInput("regions", "Sélectionner des régions", choices = unique(merged_data$region_combined)),
-                            checkboxGroupInput("sexe_region", "Sélectionner le sexe", choices = c("Homme", "Femme"))
+                            checkboxGroupInput("regions", "Sélectionner des régions", 
+                                               choices = unique(merged_data$region_combined),
+                                               selected = unique(merged_data$region_combined)),
+                            checkboxGroupInput("sexe_region", "Sélectionner le sexe", 
+                                               choices = c("Homme", "Femme"),
+                                               selected = c("Homme", "Femme"))
                           ),
                           mainPanel(
                             h4("Variation de la rémunération Prime pour les régions sélectionnées par sexe"),
@@ -352,13 +360,16 @@ ui <- fluidPage(
                           )
                         )
                ),
-
+               
                # Onglet Satisfaction Emploi
                tabPanel("Satisfaction Emploi",
                         sidebarLayout(
                           sidebarPanel(
-                            checkboxGroupInput("satisfaction_sexe", "Sélectionner le sexe", choices = c("Homme", "Femme")),
-                            sliderInput("satisfaction_remuneration", "Filtrer par rémunération", min = 25000, max = 70000, value = c(25000, 70000)),
+                            checkboxGroupInput("satisfaction_sexe", "Sélectionner le sexe", 
+                                               choices = c("Homme", "Femme"),
+                                               selected = c("Homme", "Femme")),
+                            sliderInput("satisfaction_remuneration", "Filtrer par rémunération", 
+                                        min = 25000, max = 70000, value = c(25000, 70000)),
                             # ... Ajoutez d'autres filtres selon vos besoins
                           ),
                           mainPanel(
@@ -374,6 +385,7 @@ ui <- fluidPage(
              )
     )
   )
+    
 )
 
 

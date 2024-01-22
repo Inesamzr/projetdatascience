@@ -5,6 +5,6 @@ account: goudard-margot
 server: shinyapps.io
 hostUrl: https://api.shinyapps.io/v1
 appId: 10959470
-bundleId: 8158136
+bundleId: 8170220
 url: https://goudard-margot.shinyapps.io/application/
 version: 1
